@@ -6,139 +6,124 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Life OS"/>
-<meta name="theme-color" content="#FBF1FB"/>
+<meta name="theme-color" content="#0f0f0f"/>
 <title>Life OS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   :root {
-    --bg: #FBF1FB; --bg2: #FFFFFF; --bg3: #F4EBFB;
-    --border: #F0E2F3; --text: #5A4E63; --sub: #B09BC0;
-    --accent: #C9A7E8; --accent-soft: #F3E9FB;
-    --radius: 22px;
-    --shadow: 0 6px 18px rgba(180, 140, 210, 0.12);
-    --shadow-sm: 0 3px 10px rgba(180, 140, 210, 0.10);
-    --font: "Quicksand", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --bg: #0f0f0f; --bg2: #1a1a1a; --bg3: #242424;
+    --border: #2e2e2e; --text: #f0f0f0; --sub: #888;
+    --radius: 12px; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: var(--font); font-weight: 500; background: linear-gradient(180deg, #FBF1FB 0%, #F3F0FD 100%); background-attachment: fixed; color: var(--text); min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
-  button { font-family: var(--font); font-weight: 600; cursor: pointer; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
+  button { font-family: var(--font); cursor: pointer; }
 
   /* Header */
-  .header { position: sticky; top: 0; background: rgba(251, 241, 251, 0.82); backdrop-filter: saturate(140%) blur(12px); -webkit-backdrop-filter: saturate(140%) blur(12px); z-index: 50; padding: 12px 16px 0; border-bottom: 1.5px solid var(--border); padding-top: max(12px, env(safe-area-inset-top)); }
+  .header { position: sticky; top: 0; background: var(--bg); z-index: 50; padding: 12px 16px 0; border-bottom: 0.5px solid var(--border); padding-top: max(12px, env(safe-area-inset-top)); }
   .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .app-title { font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
-  .header-meta { font-size: 12px; color: var(--sub); margin-top: 2px; font-weight: 600; }
+  .app-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .header-meta { font-size: 12px; color: var(--sub); margin-top: 2px; }
   .header-stats { text-align: right; }
-  .stat-big { font-size: 22px; font-weight: 700; color: var(--accent); }
-  .stat-label { font-size: 11px; color: var(--sub); font-weight: 600; }
-  .progress-bar { height: 8px; background: var(--bg3); border-radius: 100px; overflow: hidden; margin-bottom: 10px; }
-  .progress-fill { height: 8px; background: linear-gradient(90deg, #E8A7D4, #C9A7E8); border-radius: 100px; transition: width .4s; }
+  .stat-big { font-size: 22px; font-weight: 600; color: var(--text); }
+  .stat-label { font-size: 11px; color: var(--sub); }
+  .progress-bar { height: 3px; background: var(--bg3); border-radius: 100px; overflow: hidden; margin-bottom: 10px; }
+  .progress-fill { height: 3px; background: #7F77DD; border-radius: 100px; transition: width .4s; }
 
   /* Day nav */
-  .day-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+  .day-nav { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
   .day-nav::-webkit-scrollbar { display: none; }
-  .day-btn { padding: 7px 15px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--sub); font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0; transition: all .18s; box-shadow: var(--shadow-sm); }
-  .day-btn.today { border-color: var(--accent); color: var(--accent); }
-  .day-btn.active { background: linear-gradient(135deg, #E8A7D4, #C9A7E8); color: #fff; border-color: transparent; }
-  .day-btn.today.active { background: linear-gradient(135deg, #E8A7D4, #C9A7E8); color: #fff; border-color: transparent; }
+  .day-btn { padding: 5px 13px; border-radius: 100px; border: 1px solid var(--border); background: var(--bg2); color: var(--sub); font-size: 13px; white-space: nowrap; flex-shrink: 0; transition: all .15s; }
+  .day-btn.today { border-color: #7F77DD; color: #7F77DD; }
+  .day-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .day-btn.today.active { background: #7F77DD; color: #fff; border-color: #7F77DD; }
 
   /* View toggle */
-  .view-toggle { display: flex; gap: 6px; padding: 0 16px 12px; margin-top: 6px; }
-  .view-btn { padding: 7px 16px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--sub); font-size: 12px; font-weight: 600; box-shadow: var(--shadow-sm); transition: all .18s; }
-  .view-btn.active { background: linear-gradient(135deg, #E8A7D4, #C9A7E8); color: #fff; border-color: transparent; }
+  .view-toggle { display: flex; gap: 4px; padding: 0 16px 10px; margin-top: 6px; }
+  .view-btn { padding: 5px 14px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--sub); font-size: 12px; }
+  .view-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 
   /* Content */
-  .content { padding: 16px; }
+  .content { padding: 14px 16px; }
 
   /* Timer */
-  .timer-card { border-radius: var(--radius); padding: 18px; margin-bottom: 14px; border: 2px solid; background: var(--bg2); box-shadow: var(--shadow); }
+  .timer-card { border-radius: var(--radius); padding: 16px; margin-bottom: 14px; border: 1.5px solid; }
   .timer-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .timer-label { font-size: 13px; color: var(--sub); font-weight: 600; }
+  .timer-label { font-size: 13px; color: var(--sub); }
   .timer-controls { display: flex; gap: 6px; }
-  .timer-btn { font-size: 12px; padding: 6px 12px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--bg3); color: var(--text); font-weight: 600; }
-  .timer-display { font-size: 46px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .timer-bar { height: 8px; background: var(--bg3); border-radius: 100px; overflow: hidden; margin-top: 10px; }
-  .timer-fill { height: 8px; border-radius: 100px; transition: width 1s linear; }
-  .timer-note { font-size: 12px; color: var(--sub); margin-top: 8px; font-weight: 600; }
+  .timer-btn { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); }
+  .timer-display { font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .timer-bar { height: 4px; background: var(--bg3); border-radius: 100px; overflow: hidden; margin-top: 10px; }
+  .timer-fill { height: 4px; border-radius: 100px; transition: width 1s linear; }
+  .timer-note { font-size: 12px; color: var(--sub); margin-top: 8px; }
 
   /* Now card */
-  .now-card { border-radius: var(--radius); padding: 20px; margin-bottom: 12px; border: 2px solid; box-shadow: var(--shadow); }
-  .now-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .7; margin-bottom: 6px; }
-  .now-name { font-size: 23px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
-  .now-note { font-size: 13px; opacity: .8; margin-bottom: 14px; line-height: 1.6; font-weight: 500; }
-  .task-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border-radius: 14px; cursor: pointer; margin-bottom: 5px; transition: transform .12s; }
-  .task-row:active { transform: scale(0.98); opacity: .8; }
-  .chk { width: 22px; height: 22px; border-radius: 8px; border: 2px solid; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; transition: all .15s; }
-  .task-text { font-size: 14px; line-height: 1.5; font-weight: 500; }
+  .now-card { border-radius: 14px; padding: 18px; margin-bottom: 12px; border: 1.5px solid; }
+  .now-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .6; margin-bottom: 6px; }
+  .now-name { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .now-note { font-size: 13px; opacity: .75; margin-bottom: 14px; line-height: 1.6; }
+  .task-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; }
+  .task-row:active { opacity: .7; }
+  .chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; transition: all .15s; }
+  .task-text { font-size: 14px; line-height: 1.5; }
   .task-text.done { text-decoration: line-through; opacity: .4; }
-  .start-timer-btn { margin-top: 14px; font-size: 13px; padding: 11px 20px; border-radius: 100px; border: none; color: #fff; font-weight: 700; box-shadow: var(--shadow-sm); }
+  .start-timer-btn { margin-top: 14px; font-size: 13px; padding: 9px 18px; border-radius: 10px; border: none; color: #fff; font-weight: 500; }
 
   /* Next block */
-  .next-block { background: var(--bg2); border-radius: 18px; padding: 13px 16px; border: 1.5px solid var(--border); margin-bottom: 12px; box-shadow: var(--shadow-sm); }
-  .next-label { font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; font-weight: 700; }
-  .next-name { font-size: 14px; font-weight: 600; }
+  .next-block { background: var(--bg2); border-radius: 10px; padding: 12px 14px; border: 0.5px solid var(--border); margin-bottom: 12px; }
+  .next-label { font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .next-name { font-size: 14px; font-weight: 500; }
 
   /* Block card (day view) */
-  .block-card { border-radius: var(--radius); border: 1.5px solid var(--border); margin-bottom: 10px; overflow: hidden; transition: opacity .2s; background: var(--bg2); box-shadow: var(--shadow-sm); }
-  .block-card.current { border-width: 2px; }
-  .block-card.past { opacity: .5; }
-  .block-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; }
-  .block-time { font-size: 11px; color: var(--sub); width: 68px; flex-shrink: 0; font-weight: 600; }
-  .block-name { flex: 1; font-size: 14px; font-weight: 600; }
-  .tag-pill { font-size: 10px; padding: 3px 10px; border-radius: 100px; font-weight: 700; flex-shrink: 0; }
-  .block-prog { font-size: 11px; color: var(--sub); margin-left: 2px; font-weight: 600; }
+  .block-card { border-radius: var(--radius); border: 0.5px solid var(--border); margin-bottom: 8px; overflow: hidden; transition: opacity .2s; }
+  .block-card.current { border-width: 1.5px; }
+  .block-card.past { opacity: .4; }
+  .block-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; }
+  .block-time { font-size: 11px; color: var(--sub); width: 68px; flex-shrink: 0; }
+  .block-name { flex: 1; font-size: 14px; font-weight: 500; }
+  .tag-pill { font-size: 10px; padding: 2px 8px; border-radius: 100px; font-weight: 500; flex-shrink: 0; }
+  .block-prog { font-size: 11px; color: var(--sub); margin-left: 2px; }
   .chevron { font-size: 14px; color: var(--sub); transition: transform .2s; flex-shrink: 0; }
   .chevron.open { transform: rotate(180deg); }
-  .block-body { border-top: 1.5px solid var(--border); padding: 12px 16px 16px; display: none; }
+  .block-body { border-top: 0.5px solid var(--border); padding: 10px 14px 14px; display: none; }
   .block-body.open { display: block; }
-  .block-note { font-size: 12px; color: var(--sub); margin-top: 10px; padding: 10px 12px; background: var(--bg3); border-radius: 14px; line-height: 1.6; font-style: italic; font-weight: 500; }
-  .fixed-badge { font-size: 10px; color: var(--sub); padding: 2px 8px; border-radius: 100px; background: var(--bg3); margin-left: 6px; font-weight: 600; }
-  .mini-timer-btn { margin-top: 10px; font-size: 12px; padding: 8px 16px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--bg3); color: var(--text); font-weight: 600; }
+  .block-note { font-size: 12px; color: var(--sub); margin-top: 10px; padding: 8px 10px; background: var(--bg3); border-radius: 8px; line-height: 1.6; font-style: italic; }
+  .fixed-badge { font-size: 10px; color: var(--sub); padding: 2px 6px; border-radius: 4px; background: var(--bg3); margin-left: 6px; font-weight: 400; }
+  .mini-timer-btn { margin-top: 10px; font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); }
 
   /* Week view */
-  .week-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius); border: 1.5px solid var(--border); margin-bottom: 10px; cursor: pointer; background: var(--bg2); box-shadow: var(--shadow-sm); }
-  .week-row.today { border-color: var(--accent); }
-  .week-day { font-size: 13px; font-weight: 700; width: 32px; flex-shrink: 0; }
+  .week-row { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: var(--radius); border: 0.5px solid var(--border); margin-bottom: 8px; cursor: pointer; }
+  .week-row.today { border-color: #7F77DD; }
+  .week-day { font-size: 13px; font-weight: 500; width: 32px; flex-shrink: 0; }
   .week-meta { flex: 1; min-width: 0; }
-  .week-theme { font-size: 13px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .week-bar { height: 6px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
-  .week-fill { height: 6px; border-radius: 100px; }
-  .week-count { font-size: 12px; color: var(--sub); flex-shrink: 0; font-weight: 600; }
+  .week-theme { font-size: 13px; font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .week-bar { height: 3px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
+  .week-fill { height: 3px; border-radius: 100px; }
+  .week-count { font-size: 12px; color: var(--sub); flex-shrink: 0; }
 
   /* Rescue */
-  .rescue-toggle { width: 100%; margin-top: 14px; padding: 13px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--accent); font-size: 13px; font-weight: 700; box-shadow: var(--shadow-sm); }
-  .rescue-panel { margin-top: 10px; background: var(--bg2); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
-  .rescue-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
-  .rescue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .rescue-item { padding: 12px 14px; border-radius: 16px; border: 1.5px solid var(--border); background: var(--accent-soft); cursor: pointer; transition: transform .12s; }
-  .rescue-item:active { transform: scale(0.97); opacity: .8; }
-  .rescue-item b { display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-  .rescue-item span { font-size: 11px; color: var(--sub); font-weight: 500; }
+  .rescue-toggle { width: 100%; margin-top: 14px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg2); color: var(--sub); font-size: 13px; }
+  .rescue-panel { margin-top: 10px; background: var(--bg2); border-radius: var(--radius); padding: 14px; }
+  .rescue-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
+  .rescue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .rescue-item { padding: 10px 12px; border-radius: 10px; border: 0.5px solid var(--border); background: var(--bg); cursor: pointer; }
+  .rescue-item:active { opacity: .7; }
+  .rescue-item b { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .rescue-item span { font-size: 11px; color: var(--sub); }
 
   /* Day header */
-  .day-header { margin-bottom: 14px; }
-  .day-title-big { font-size: 18px; font-weight: 700; color: var(--text); }
-  .day-intent { font-size: 13px; color: var(--sub); margin-top: 6px; line-height: 1.6; font-weight: 500; }
-  .theme-pill { display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 100px; font-weight: 700; margin-top: 6px; }
+  .day-header { margin-bottom: 12px; }
+  .day-title-big { font-size: 17px; font-weight: 600; color: var(--text); }
+  .day-intent { font-size: 13px; color: var(--sub); margin-top: 6px; line-height: 1.6; }
+  .theme-pill { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 100px; font-weight: 500; margin-top: 4px; }
 
   /* Install banner */
-  .install-banner { margin: 0 16px 12px; background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; border: 1.5px solid var(--accent); display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-sm); }
-  .install-text { flex: 1; font-size: 12px; color: var(--sub); line-height: 1.5; font-weight: 500; }
+  .install-banner { margin: 0 16px 12px; background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; border: 1px solid #7F77DD44; display: flex; align-items: center; gap: 10px; }
+  .install-text { flex: 1; font-size: 12px; color: var(--sub); line-height: 1.5; }
   .install-text b { color: var(--text); }
   .install-close { font-size: 16px; color: var(--sub); background: none; border: none; padding: 4px; }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #221B2B; --bg2: #2E2538; --bg3: #3A2F47;
-      --border: #3F3450; --text: #EFE6F5; --sub: #A593B8;
-      --accent: #D8B6F0; --accent-soft: #3A2F47;
-      --shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-      --shadow-sm: 0 3px 10px rgba(0, 0, 0, 0.20);
-    }
-    body { background: linear-gradient(180deg, #221B2B 0%, #1E1A2B 100%); }
-    .header { background: rgba(34, 27, 43, 0.82); }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f5f5f5; --bg2: #fff; --bg3: #ebebeb; --border: #ddd; --text: #111; --sub: #777; }
   }
 </style>
 </head>
@@ -173,10 +158,10 @@ const B = {
   ibm:        {st:t(9),    en:t(17,30), name:"IBM — full day",      tag:"IBM",    fixed:true,  tasks:["Show up fully — this is referral territory","Build rapport with one teammate this week","Lunch: eat what you packed, step outside 10 min","Note one thing you built or learned today"], note:"IBM colleagues are potential full-time referrals. Your internship is part of your visa strategy."},
   commute_home:{st:t(17,30),en:t(18,15),name:"Commute home",        tag:"Life",   fixed:true,  tasks:["Walk part of commute if possible — steps count","Listen to something enjoyable — not work","Mentally close the IBM day before you walk in"], note:"Without this mental close, IBM stress bleeds into every evening."},
   change:     {st:t(18,15),en:t(18,30), name:"Home reset",          tag:"Body",   fixed:false, tasks:["Change out of work clothes immediately","Drink water","Decide: workout now or after dinner?"], note:"Changing clothes is a powerful transition signal for ADHD brains."},
-  move_dinner:{st:t(18,30),en:t(19,30), name:"Move + reheat dinner", tag:"Health", fixed:false, tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Reheat prepped meal — track macros"], note:"Movement resets ADHD focus for the evening. Even a 20 min walk counts."},
-  move_cook:  {st:t(18,30),en:t(19,30), name:"Move + cook dinner",   tag:"Health", fixed:false, tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Change into comfy clothes — cooking mode on"], note:"Movement first, then cooking as your decompression. This is the good part of the day."},
-  cook_tue:   {st:t(19,30),en:t(20,30), name:"Cook a proper meal",   tag:"Health", fixed:false, tasks:["Pull up a saved IG reel or recipe you've been wanting to try","Cook something real — you're eating it tonight + lunch tomorrow","Track macros while you eat","No screens during eating if you can manage it"], note:"Cooking is your creative decompression tonight. It doesn't have to be complicated — just intentional."},
-  cook_wed:   {st:t(19,30),en:t(20,30), name:"Cook a proper meal",   tag:"Health", fixed:false, tasks:["Different recipe from Tuesday — keep it interesting","Cook enough for tomorrow's lunch too","Track macros","Eat slowly — this is your one real break today"], note:"Mid-week cooking resets you better than Netflix. You already know this."},
+  move_reheat:{st:t(18,30),en:t(19,30), name:"Move + reheat dinner", tag:"Health", fixed:false, tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Reheat Saturday's batch cook — track macros"], note:"Movement resets ADHD focus for the evening. Even a 20 min walk counts."},
+  move_cook:  {st:t(18,30),en:t(19,30), name:"Move + get ready to cook", tag:"Health", fixed:false, tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Change into comfy clothes — cooking mode on"], note:"Movement first, then cooking as your decompression. This is the good part of the day."},
+  cook_tue:   {st:t(19,30),en:t(20,30), name:"Cook a proper meal — big batch", tag:"Health", fixed:false, tasks:["This batch: Lunch ×3 (Wed, Thu, Fri) · Dinner ×3 (Tue, Wed, Thu) — 6 containers total","Portion and label all 6 before putting away","Pick something that scales well and reheats great — stir fry, curry, pasta, grain bowls","Track macros on what you make so every reheat is already logged","Eat one portion tonight"], note:"Tuesday cook is your biggest cook of the week — 6 meals from one session. Make enough and portion immediately so you're never guessing."},
+  order_in:   {st:t(19,30),en:t(20,30), name:"Order in 🍕",          tag:"Health", fixed:false, tasks:["You earned this — order whatever you want","No tracking tonight if you don't want to","Eat and enjoy — this is your end-of-week treat"], note:"Friday order-in is built into the plan. Zero guilt."},
   apps_big:   {st:t(19,30),en:t(22),    name:"Job applications",    tag:"Career", fixed:false, tasks:["20–30 targeted applications — H1B-sponsoring companies first","Reach out to 3–5 referral contacts","Research 3 new sponsoring companies, add to master list","Update application tracker"], note:"2.5 hours = your highest-volume application session. Timer on, one tab."},
   apps_med:   {st:t(21,30),en:t(22),    name:"Job apps — daily streak",tag:"Career",fixed:false,tasks:["10–15 applications — keep the streak alive","Use saved company list — no starting from scratch","One LinkedIn recruiter DM"], note:"Even 10 on a tired night keeps momentum."},
   dsa:        {st:t(19,30),en:t(21,30), name:"DSA practice",        tag:"Career", fixed:false, tasks:["2–3 LeetCode problems (easy → medium progression)","Understand the pattern — not just the solution","Note the pattern name for review later"], note:"2 focused hours > 4 distracted hours. Timer on, phone elsewhere."},
@@ -199,7 +184,8 @@ const SL={st:t(13,30),en:t(14),name:"Lunch",tag:"Health",fixed:false,tasks:["Eat
 const SC={st:t(14),en:t(16),name:"CSCI — long session",tag:"CSCI",fixed:false,tasks:["2 hours: assignments, projects, or exam prep","Define done before you start","If ahead: work on next module"],note:"Saturday CSCI is the most important session of the week. No IBM, no interruptions."};
 const SP={st:t(16),en:t(17,30),name:"Portfolio + project",tag:"Skills",fixed:false,tasks:["One concrete improvement to portfolio website","Build or extend a project with Cursor + Claude","Or write a Medium draft — an outline counts"],note:"This is what separates you from other applicants."};
 const SW2={st:t(17,30),en:t(19),name:"Workout + meal prep",tag:"Health",fixed:false,tasks:["45–60 min home workout — YouTube, commit to one series","Shower after — full wash if it's hair day","Batch cook while energy is still there: proteins + grains for Mon/Thu/Fri reheat nights"],note:"Meal prep right after workout while you're already in action mode. Shower, then cook."};
-const SM={st:t(19),en:t(19,30),name:"Eat + wind into evening",tag:"Health",fixed:false,tasks:["Eat dinner — something from today's prep or simple","Track macros","You've done a full day's work — the evening is yours"],note:""};
+const SM={st:t(19),en:t(21),name:"Saturday cook — big batch",tag:"Health",fixed:false,tasks:["This batch: Lunch ×2 (Mon, Tue) · Dinner ×2 (Sun, Mon) — 4 containers total","Portion and label all 4 before putting away","Pick recipes that reheat well — curries, dals, grains, roasted veg, proteins","Cook in batches: protein + carb + veg source","Track macros on what you make so reheating is already tracked"],note:"Saturday cook is the backbone of your week. 4 portioned containers = zero decisions Mon and Tue."};
+const SLunch={st:t(12),en:t(13),name:"Saturday lunch",tag:"Health",fixed:false,tasks:["Fruits, salad, or Friday order-in leftovers","Light and easy — you're about to grocery shop","Track macros"],note:""};
 const SLI={st:t(19,30),en:t(22,30),name:"Saturday life",tag:"Life",fixed:false,tasks:["Go out, explore, do something you'll remember","Dinner out if you didn't eat at home","Call Tirth — tell him about your day","This is the life you said you were missing. It exists now."],note:"You worked 10+ hours today. 3 hours of real life tonight is not optional — it's the point."};
 const UW={st:t(7,30),en:t(9),name:"Slow wake + full ritual",tag:"Spirit",fixed:false,tasks:["Sleep in — up by 7:30","Full ritual: Isha Kriya + shivling abhishek + mala jaap","Brush teeth, shower, full skincare — the weekly deep reset"],note:"Sunday ritual is the deepest of the week. Don't rush it."};
 const UC={st:t(9),en:t(11,30),name:"CSCI — long session",tag:"CSCI",fixed:false,tasks:["Triage first — what's due this week?","Do the highest-priority item first","If caught up: get one week ahead"],note:"Sunday + Saturday CSCI = 4.5 hrs dedicated + 75 min daily morning touches. You will not fall behind."};
@@ -212,13 +198,13 @@ const UE={st:t(18,30),en:t(22),name:"Calm Sunday evening",tag:"Life",fixed:false
 const UWind={st:t(22),en:t(23),name:"Sunday wind down",tag:"Spirit",fixed:false,tasks:["Brush teeth + skincare","Isha Kriya or breathing to sleep","Bag packed, clothes out, water on nightstand","In bed by 11. 5am comes fast."],note:"How you end Sunday decides how Monday starts."};
 
 const DAYS=[
-  {name:"Monday",   short:"Mon",theme:"Job hunt night",       tc:"#7F77DD",tb:"#EEEDFE",intent:"Big application block tonight. One focus, done well. Reheat tonight — cooking starts Tuesday.",               blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_dinner,B.apps_big,B.tirth,B.wind]},
-  {name:"Tuesday",  short:"Tue",theme:"DSA + cook night",     tc:"#888780",tb:"#F1EFE8",intent:"DSA first while brain is sharpest, then cook a proper meal as your decompression. CSCI touch before bed.",        blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_cook,B.cook_tue,B.dsa,B.csci_touch,B.apps_med,B.wind]},
-  {name:"Wednesday",short:"Wed",theme:"CSCI + cook night",    tc:"#888780",tb:"#F1EFE8",intent:"Cook night again — different recipe, leftovers for Thursday lunch. CSCI full session after.",                      blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_cook,B.cook_wed,B.csci_long,B.upskill,B.apps_med,B.wind]},
-  {name:"Thursday", short:"Thu",theme:"Job apps + CSCI night",tc:"#7F77DD",tb:"#EEEDFE",intent:"Applications first while evening energy is highest, then CSCI touch. Reheating tonight — Wednesday leftovers.",   blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_dinner,B.apps_big,B.csci_touch,B.tirth_long,B.wind]},
-  {name:"Friday",   short:"Fri",theme:"Content + rest night", tc:"#BA7517",tb:"#FAEEDA",intent:"Content creation works Friday — you're more yourself when the week's pressure lifts. Reheat or order tonight.",    blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,FRI_D,B.content,B.apps_med,FRI_F,B.wind]},
-  {name:"Saturday", short:"Sat",theme:"Deep work + groceries",tc:"#7F77DD",tb:"#EEEDFE",intent:"No IBM. Jobs, CSCI, grocery run, meal prep, workout — then the evening is actually yours.",                        blocks:[SW,SB,SJ,SG,SL,SC,SP,SW2,SM,SLI,B.wind]},
-  {name:"Sunday",   short:"Sun",theme:"Reset day",            tc:"#D4537E",tb:"#FBEAF0",intent:"Not catch-up — reset. CSCI, planning, light prep, and early rest so Monday-you starts strong.",                    blocks:[UW,UC,UL,UR,UA,URest,UM,UE,UWind]},
+  {name:"Monday",   short:"Mon",theme:"Job hunt night",       tc:"#7F77DD",tb:"#EEEDFE",intent:"Big application block tonight. Reheating Saturday's batch cook — zero effort dinner.",               blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_reheat,B.apps_big,B.tirth,B.wind]},
+  {name:"Tuesday",  short:"Tue",theme:"DSA + big cook night", tc:"#888780",tb:"#F1EFE8",intent:"DSA first, then Tuesday's big cook — this batch feeds you Wed, Thu, and Fri lunch. Make enough.",   blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_cook,B.cook_tue,B.dsa,B.csci_touch,B.apps_med,B.wind]},
+  {name:"Wednesday",short:"Wed",theme:"CSCI + upskill night", tc:"#888780",tb:"#F1EFE8",intent:"Reheating Tuesday's cook tonight. CSCI full session, then upskill. Lunch was Tuesday's too.",        blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_reheat,B.csci_long,B.upskill,B.apps_med,B.wind]},
+  {name:"Thursday", short:"Thu",theme:"Job apps + CSCI night",tc:"#7F77DD",tb:"#EEEDFE",intent:"Applications first, then CSCI touch. Reheating Tuesday's cook — lunch and dinner both covered.",    blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_reheat,B.apps_big,B.csci_touch,B.tirth_long,B.wind]},
+  {name:"Friday",   short:"Fri",theme:"Content + order in 🍕",tc:"#BA7517",tb:"#FAEEDA",intent:"Content creation, then order in tonight — built into the plan, zero guilt. Tuesday's cook covers lunch.", blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,FRI_D,B.content,B.apps_med,B.order_in,FRI_F,B.wind]},
+  {name:"Saturday", short:"Sat",theme:"Deep work + groceries",tc:"#7F77DD",tb:"#EEEDFE",intent:"No IBM. Jobs, CSCI, grocery run, big batch cook for Sun+Mon+Tue. Then the evening is yours.",        blocks:[SW,SB,SJ,SG,SLunch,SC,SP,SW2,SM,SLI,B.wind]},
+  {name:"Sunday",   short:"Sun",theme:"Reset day",            tc:"#D4537E",tb:"#FBEAF0",intent:"Not catch-up — reset. CSCI, planning, light prep, and early rest so Monday-you starts strong.",      blocks:[UW,UC,UL,UR,UA,URest,UM,UE,UWind]},
 ];
 
 const STORAGE_KEY = "life_os_v3";
@@ -297,7 +283,7 @@ function render(){
   <div class="header">
     <div class="header-row">
       <div>
-        <div class="app-title">Life OS ૮ ˶ᵔ ᵕ ᵔ˶ ྀིა</div>
+        <div class="app-title">Life OS</div>
         <div class="header-meta">${day.name} · <span id="clk">${fmtClock()}</span></div>
       </div>
       <div class="header-stats">
@@ -413,7 +399,7 @@ function render(){
         ${isOpen?`<div class="block-body open">
           ${b.tasks.map((t,ti)=>`
           <div class="task-row" onclick="toggle('${day.name}',${bi},${ti})">
-            <div class="chk" style="border-color:${tasks[ti]?"var(--accent)":"var(--border)"};background:${tasks[ti]?"var(--accent)":"transparent"}">${tasks[ti]?"✓":""}</div>
+            <div class="chk" style="border-color:${tasks[ti]?"#7F77DD":"var(--border)"};background:${tasks[ti]?"#7F77DD":"transparent"}">${tasks[ti]?"✓":""}</div>
             <div class="task-text${tasks[ti]?" done":""}">${t}</div>
           </div>`).join("")}
           ${b.note?`<div class="block-note">${b.note}</div>`:""}
@@ -430,7 +416,7 @@ function render(){
       const {done,total}=getDayStats(d.name,d.blocks);
       const p=Math.round(done/total*100);
       html+=`<div class="week-row${i===tIdx?" today":""}" onclick="activeDayIdx=${i};view='day';render()">
-        <div class="week-day" style="color:${i===tIdx?"var(--accent)":"var(--text)"}">${d.short}</div>
+        <div class="week-day" style="color:${i===tIdx?"#7F77DD":"var(--text)"}">${d.short}</div>
         <div class="week-meta">
           <div class="week-theme">${d.theme}</div>
           <div class="week-bar"><div class="week-fill" style="width:${p}%;background:${d.tc}"></div></div>
