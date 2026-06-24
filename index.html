@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Life OS"/>
+<meta name="theme-color" content="#0f0f0f"/>
+<title>Life OS</title>
+<style>
+  :root {
+    --bg: #0f0f0f; --bg2: #1a1a1a; --bg3: #242424;
+    --border: #2e2e2e; --text: #f0f0f0; --sub: #888;
+    --radius: 12px; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
+  button { font-family: var(--font); cursor: pointer; }
+
+  /* Header */
+  .header { position: sticky; top: 0; background: var(--bg); z-index: 50; padding: 12px 16px 0; border-bottom: 0.5px solid var(--border); padding-top: max(12px, env(safe-area-inset-top)); }
+  .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .app-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .header-meta { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .header-stats { text-align: right; }
+  .stat-big { font-size: 22px; font-weight: 600; color: var(--text); }
+  .stat-label { font-size: 11px; color: var(--sub); }
+  .progress-bar { height: 3px; background: var(--bg3); border-radius: 100px; overflow: hidden; margin-bottom: 10px; }
+  .progress-fill { height: 3px; background: #7F77DD; border-radius: 100px; transition: width .4s; }
+
+  /* Day nav */
+  .day-nav { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+  .day-nav::-webkit-scrollbar { display: none; }
+  .day-btn { padding: 5px 13px; border-radius: 100px; border: 1px solid var(--border); background: var(--bg2); color: var(--sub); font-size: 13px; white-space: nowrap; flex-shrink: 0; transition: all .15s; }
+  .day-btn.today { border-color: #7F77DD; color: #7F77DD; }
+  .day-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .day-btn.today.active { background: #7F77DD; color: #fff; border-color: #7F77DD; }
+
+  /* View toggle */
+  .view-toggle { display: flex; gap: 4px; padding: 0 16px 10px; margin-top: 6px; }
+  .view-btn { padding: 5px 14px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--sub); font-size: 12px; }
+  .view-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  /* Content */
+  .content { padding: 14px 16px; }
+
+  /* Timer */
+  .timer-card { border-radius: var(--radius); padding: 16px; margin-bottom: 14px; border: 1.5px solid; }
+  .timer-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .timer-label { font-size: 13px; color: var(--sub); }
+  .timer-controls { display: flex; gap: 6px; }
+  .timer-btn { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); }
+  .timer-display { font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .timer-bar { height: 4px; background: var(--bg3); border-radius: 100px; overflow: hidden; margin-top: 10px; }
+  .timer-fill { height: 4px; border-radius: 100px; transition: width 1s linear; }
+  .timer-note { font-size: 12px; color: var(--sub); margin-top: 8px; }
+
+  /* Now card */
+  .now-card { border-radius: 14px; padding: 18px; margin-bottom: 12px; border: 1.5px solid; }
+  .now-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .6; margin-bottom: 6px; }
+  .now-name { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .now-note { font-size: 13px; opacity: .75; margin-bottom: 14px; line-height: 1.6; }
+  .task-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; }
+  .task-row:active { opacity: .7; }
+  .chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; transition: all .15s; }
+  .task-text { font-size: 14px; line-height: 1.5; }
+  .task-text.done { text-decoration: line-through; opacity: .4; }
+  .start-timer-btn { margin-top: 14px; font-size: 13px; padding: 9px 18px; border-radius: 10px; border: none; color: #fff; font-weight: 500; }
+
+  /* Next block */
+  .next-block { background: var(--bg2); border-radius: 10px; padding: 12px 14px; border: 0.5px solid var(--border); margin-bottom: 12px; }
+  .next-label { font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .next-name { font-size: 14px; font-weight: 500; }
+
+  /* Block card (day view) */
+  .block-card { border-radius: var(--radius); border: 0.5px solid var(--border); margin-bottom: 8px; overflow: hidden; transition: opacity .2s; }
+  .block-card.current { border-width: 1.5px; }
+  .block-card.past { opacity: .4; }
+  .block-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; }
+  .block-time { font-size: 11px; color: var(--sub); width: 68px; flex-shrink: 0; }
+  .block-name { flex: 1; font-size: 14px; font-weight: 500; }
+  .tag-pill { font-size: 10px; padding: 2px 8px; border-radius: 100px; font-weight: 500; flex-shrink: 0; }
+  .block-prog { font-size: 11px; color: var(--sub); margin-left: 2px; }
+  .chevron { font-size: 14px; color: var(--sub); transition: transform .2s; flex-shrink: 0; }
+  .chevron.open { transform: rotate(180deg); }
+  .block-body { border-top: 0.5px solid var(--border); padding: 10px 14px 14px; display: none; }
+  .block-body.open { display: block; }
+  .block-note { font-size: 12px; color: var(--sub); margin-top: 10px; padding: 8px 10px; background: var(--bg3); border-radius: 8px; line-height: 1.6; font-style: italic; }
+  .fixed-badge { font-size: 10px; color: var(--sub); padding: 2px 6px; border-radius: 4px; background: var(--bg3); margin-left: 6px; font-weight: 400; }
+  .mini-timer-btn { margin-top: 10px; font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); }
+
+  /* Week view */
+  .week-row { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: var(--radius); border: 0.5px solid var(--border); margin-bottom: 8px; cursor: pointer; }
+  .week-row.today { border-color: #7F77DD; }
+  .week-day { font-size: 13px; font-weight: 500; width: 32px; flex-shrink: 0; }
+  .week-meta { flex: 1; min-width: 0; }
+  .week-theme { font-size: 13px; font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .week-bar { height: 3px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
+  .week-fill { height: 3px; border-radius: 100px; }
+  .week-count { font-size: 12px; color: var(--sub); flex-shrink: 0; }
+
+  /* Rescue */
+  .rescue-toggle { width: 100%; margin-top: 14px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg2); color: var(--sub); font-size: 13px; }
+  .rescue-panel { margin-top: 10px; background: var(--bg2); border-radius: var(--radius); padding: 14px; }
+  .rescue-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
+  .rescue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .rescue-item { padding: 10px 12px; border-radius: 10px; border: 0.5px solid var(--border); background: var(--bg); cursor: pointer; }
+  .rescue-item:active { opacity: .7; }
+  .rescue-item b { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .rescue-item span { font-size: 11px; color: var(--sub); }
+
+  /* Day header */
+  .day-header { margin-bottom: 12px; }
+  .day-title-big { font-size: 17px; font-weight: 600; color: var(--text); }
+  .day-intent { font-size: 13px; color: var(--sub); margin-top: 6px; line-height: 1.6; }
+  .theme-pill { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 100px; font-weight: 500; margin-top: 4px; }
+
+  /* Install banner */
+  .install-banner { margin: 0 16px 12px; background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; border: 1px solid #7F77DD44; display: flex; align-items: center; gap: 10px; }
+  .install-text { flex: 1; font-size: 12px; color: var(--sub); line-height: 1.5; }
+  .install-text b { color: var(--text); }
+  .install-close { font-size: 16px; color: var(--sub); background: none; border: none; padding: 4px; }
+
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f5f5f5; --bg2: #fff; --bg3: #ebebeb; --border: #ddd; --text: #111; --sub: #777; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const C = {
+  Spirit:  { color:"#D4537E", bg:"#FBEAF0", tc:"#72243E" },
+  Body:    { color:"#5DCAA5", bg:"#E1F5EE", tc:"#085041" },
+  Health:  { color:"#D85A30", bg:"#FAECE7", tc:"#712B13" },
+  IBM:     { color:"#666",    bg:"#F1EFE8", tc:"#333" },
+  Career:  { color:"#7F77DD", bg:"#EEEDFE", tc:"#3C3489" },
+  Skills:  { color:"#1D9E75", bg:"#E1F5EE", tc:"#085041" },
+  CSCI:    { color:"#888780", bg:"#F1EFE8", tc:"#444441" },
+  Content: { color:"#BA7517", bg:"#FAEEDA", tc:"#633806" },
+  Life:    { color:"#378ADD", bg:"#E6F1FB", tc:"#0C447C" },
+};
+
+const t=(h,m=0)=>h+m/60;
+const fmtH=h=>{const hh=Math.floor(h)%12||12,mm=Math.round((h%1)*60),ap=h>=12&&h<24?"pm":"am";return `${hh}${mm?":"+String(mm).padStart(2,"0"):""}${ap}`;};
+
+const B = {
+  wake:       {st:t(5),    en:t(5,10),  name:"Wake up",             tag:"Body",   fixed:false, tasks:["Sit up immediately — don't lie back down","Drink the glass of water on your nightstand","Lights on. Bright light ends sleep inertia."], note:"Don't negotiate in bed. Sit up first, feel awake second."},
+  ritual:     {st:t(5,10), en:t(5,40),  name:"Morning ritual",      tag:"Spirit", fixed:false, tasks:["Isha Kriya — 15 min (before phone, before anything)","Lamp diya + mala jaap","This is yours before the day begins."], note:"Do this before checking your phone. One Instagram scroll ruins the ritual."},
+  hygiene:    {st:t(5,40), en:t(6,15),  name:"Shower + get ready",  tag:"Body",   fixed:false, tasks:["Brush teeth — 2 min, set a timer","Shower — full wash on hair days, quick rinse otherwise","Skincare: cleanser → moisturiser → SPF","Get dressed — clothes laid out the night before"], note:"Hygiene scheduled = hygiene that actually happens."},
+  bfast:      {st:t(6,15), en:t(7),     name:"Breakfast + meds",    tag:"Health", fixed:false, tasks:["Take thyroid meds first — empty stomach","Use the 30-min wait to pack your bag and lunch","Eat breakfast — protein first, track macros"], note:"Thyroid meds on empty stomach affects your whole day's hormone levels."},
+  precsci:    {st:t(7),    en:t(8,15),  name:"Morning CSCI block",  tag:"CSCI",   fixed:false, tasks:["One problem, one reading, or review yesterday's notes","75 min of quiet before the world wakes up","No job apps here — too fragmented"], note:"Your 5am start gives you a 3-hour head start. This is it."},
+  leave:      {st:t(8,15), en:t(8,20),  name:"Leave for IBM",       tag:"IBM",    fixed:true,  tasks:["Bag packed (done last night)","Lunch packed","Out the door by 8:20 — not 8:22"], note:""},
+  commute_to: {st:t(8,20), en:t(9),     name:"Commute to IBM",      tag:"IBM",    fixed:true,  tasks:["Headphones in — podcast, Brij Kishore, or tech audio","No doom scrolling — learning or music only","One thing to accomplish at IBM today?"], note:"40 min × 5 days = 3.5 hrs/week of free learning."},
+  ibm:        {st:t(9),    en:t(17,30), name:"IBM — full day",      tag:"IBM",    fixed:true,  tasks:["Show up fully — this is referral territory","Build rapport with one teammate this week","Lunch: eat what you packed, step outside 10 min","Note one thing you built or learned today"], note:"IBM colleagues are potential full-time referrals. Your internship is part of your visa strategy."},
+  commute_home:{st:t(17,30),en:t(18,15),name:"Commute home",        tag:"Life",   fixed:true,  tasks:["Walk part of commute if possible — steps count","Listen to something enjoyable — not work","Mentally close the IBM day before you walk in"], note:"Without this mental close, IBM stress bleeds into every evening."},
+  change:     {st:t(18,15),en:t(18,30), name:"Home reset",          tag:"Body",   fixed:false, tasks:["Change out of work clothes immediately","Drink water","Decide: workout now or after dinner?"], note:"Changing clothes is a powerful transition signal for ADHD brains."},
+  move_dinner:{st:t(18,30),en:t(19,30), name:"Move + reheat dinner", tag:"Health", fixed:false, tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Reheat prepped meal — track macros"], note:"Movement resets ADHD focus for the evening. Even a 20 min walk counts."},
+  move_cook:  {st:t(18,30),en:t(19,30), name:"Move + cook dinner",   tag:"Health", fixed:false, tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Change into comfy clothes — cooking mode on"], note:"Movement first, then cooking as your decompression. This is the good part of the day."},
+  cook_tue:   {st:t(19,30),en:t(20,30), name:"Cook a proper meal",   tag:"Health", fixed:false, tasks:["Pull up a saved IG reel or recipe you've been wanting to try","Cook something real — you're eating it tonight + lunch tomorrow","Track macros while you eat","No screens during eating if you can manage it"], note:"Cooking is your creative decompression tonight. It doesn't have to be complicated — just intentional."},
+  cook_wed:   {st:t(19,30),en:t(20,30), name:"Cook a proper meal",   tag:"Health", fixed:false, tasks:["Different recipe from Tuesday — keep it interesting","Cook enough for tomorrow's lunch too","Track macros","Eat slowly — this is your one real break today"], note:"Mid-week cooking resets you better than Netflix. You already know this."},
+  apps_big:   {st:t(19,30),en:t(22),    name:"Job applications",    tag:"Career", fixed:false, tasks:["20–30 targeted applications — H1B-sponsoring companies first","Reach out to 3–5 referral contacts","Research 3 new sponsoring companies, add to master list","Update application tracker"], note:"2.5 hours = your highest-volume application session. Timer on, one tab."},
+  apps_med:   {st:t(21,30),en:t(22),    name:"Job apps — daily streak",tag:"Career",fixed:false,tasks:["10–15 applications — keep the streak alive","Use saved company list — no starting from scratch","One LinkedIn recruiter DM"], note:"Even 10 on a tired night keeps momentum."},
+  dsa:        {st:t(19,30),en:t(21,30), name:"DSA practice",        tag:"Career", fixed:false, tasks:["2–3 LeetCode problems (easy → medium progression)","Understand the pattern — not just the solution","Note the pattern name for review later"], note:"2 focused hours > 4 distracted hours. Timer on, phone elsewhere."},
+  csci_long:  {st:t(19,30),en:t(21,30), name:"CSCI — full session", tag:"CSCI",   fixed:false, tasks:["Define 'done' before opening your laptop","One assignment, problem set, or two weeks of readings","Check: anything due in the next 5 days?"], note:"2 hours focused with a clear definition of done beats 4 hours of aimless study."},
+  csci_touch: {st:t(21,30),en:t(22,30), name:"CSCI — daily touch",  tag:"CSCI",   fixed:false, tasks:["Review notes, one problem, or read ahead","Even light contact keeps material from going cold","Check upcoming deadlines"], note:"Touching CSCI daily means no panic the night before a deadline."},
+  upskill:    {st:t(21,30),en:t(22,30), name:"Upskill",             tag:"Skills", fixed:false, tasks:["Pick ONE topic — read or watch, then build something tiny with Cursor + Claude","Document it: one LinkedIn post or Medium draft","Follow up on Brij Kishore content from today's commute"], note:"One topic. One tiny output. Consistency over heroics."},
+  content:    {st:t(19,30),en:t(21,30), name:"Content creation",    tag:"Content",fixed:false, tasks:["Film or draft one piece — YouTube, reel, or LinkedIn carousel","Your IBM + job hunt journey IS the content","Post something — imperfect and posted beats perfect in drafts forever"], note:"Friday you're more yourself. Content made relaxed is better content."},
+  tirth:      {st:t(22),   en:t(22,30), name:"Tirth + connect",     tag:"Life",   fixed:false, tasks:["Short time with Tirth — talk, decompress together","You're both in the same grind. Be each other's calm.","Transition to sleep mode"], note:""},
+  tirth_long: {st:t(21,30),en:t(22,30), name:"Tirth time",          tag:"Life",   fixed:false, tasks:["Time with Tirth — no stress talk, just be together","Or call family / a friend","Connection is necessary, not a reward"], note:""},
+  wind:       {st:t(22,30),en:t(23),    name:"Night wind down",     tag:"Spirit", fixed:false, tasks:["Brush teeth (2 min)","Skincare: cleanser + moisturiser","Write 3 wins from today — tiny ones count","Lay out tomorrow's clothes + pack bag","Phone on DND. In bed by 11."], note:"6 hours (11pm–5am) is the minimum. Every minute past 11 steals from 5am-you."},
+};
+
+const FRI_D={st:t(18,30),en:t(19,30),name:"Decompress — actually",tag:"Life",fixed:false,tasks:["No work. You did 9–5 all week.","Walk, music, Tirth — whatever recharges you","Eat dinner, something you enjoy"],note:"You earned this hour."};
+const FRI_F={st:t(21,30),en:t(22,30),name:"Friday free time",tag:"Life",fixed:false,tasks:["Tirth — go out, watch something, make a memory","Or call a friend you've been meaning to call","No guilt about not working — this IS the life you're building"],note:""};
+const SW={st:t(7),en:t(8,30),name:"Slow morning + ritual",tag:"Spirit",fixed:false,tasks:["Wake naturally — no alarm, or set for 7","Isha Kriya + lamp diya + mala jaap — longer, unhurried","Brush teeth, shower (hair wash day), full skincare"],note:"Saturday morning is not Monday morning. Let it breathe."};
+const SB={st:t(8,30),en:t(9),name:"Breakfast + ready",tag:"Health",fixed:false,tasks:["Thyroid meds first, then wait","Eat proper breakfast, track macros","Get dressed — signals brain the day has started"],note:""};
+const SJ={st:t(9),en:t(12),name:"Job hunt — big block",tag:"Career",fixed:false,tasks:["30–40 targeted applications — H1B-sponsoring companies first","Research 5 new sponsoring companies","Send 8–10 referral outreach messages","Connect with 10 recruiters on LinkedIn with a personalised note"],note:"3 hours uninterrupted > 6 fragmented evenings. Timer on, phone in another room."};
+const SG={st:t(12),en:t(13,30),name:"Grocery shopping",tag:"Health",fixed:false,tasks:["Write your list before you go — check what's already in the fridge","Shop for the full week: proteins, veg, carbs, snacks, breakfast items","Buy ingredients for your Tue + Wed cook nights specifically","Grab anything for meal prep batch cooking too"],note:"Saturday grocery run covers the whole week. Don't go hungry — you'll impulse buy everything."};
+const SL={st:t(13,30),en:t(14),name:"Lunch",tag:"Health",fixed:false,tasks:["Eat a proper lunch after shopping — track macros","Quick and easy today, you've already done a lot","Rest for 10 min before the next block"],note:""};
+const SC={st:t(14),en:t(16),name:"CSCI — long session",tag:"CSCI",fixed:false,tasks:["2 hours: assignments, projects, or exam prep","Define done before you start","If ahead: work on next module"],note:"Saturday CSCI is the most important session of the week. No IBM, no interruptions."};
+const SP={st:t(16),en:t(17,30),name:"Portfolio + project",tag:"Skills",fixed:false,tasks:["One concrete improvement to portfolio website","Build or extend a project with Cursor + Claude","Or write a Medium draft — an outline counts"],note:"This is what separates you from other applicants."};
+const SW2={st:t(17,30),en:t(19),name:"Workout + meal prep",tag:"Health",fixed:false,tasks:["45–60 min home workout — YouTube, commit to one series","Shower after — full wash if it's hair day","Batch cook while energy is still there: proteins + grains for Mon/Thu/Fri reheat nights"],note:"Meal prep right after workout while you're already in action mode. Shower, then cook."};
+const SM={st:t(19),en:t(19,30),name:"Eat + wind into evening",tag:"Health",fixed:false,tasks:["Eat dinner — something from today's prep or simple","Track macros","You've done a full day's work — the evening is yours"],note:""};
+const SLI={st:t(19,30),en:t(22,30),name:"Saturday life",tag:"Life",fixed:false,tasks:["Go out, explore, do something you'll remember","Dinner out if you didn't eat at home","Call Tirth — tell him about your day","This is the life you said you were missing. It exists now."],note:"You worked 10+ hours today. 3 hours of real life tonight is not optional — it's the point."};
+const UW={st:t(7,30),en:t(9),name:"Slow wake + full ritual",tag:"Spirit",fixed:false,tasks:["Sleep in — up by 7:30","Full ritual: Isha Kriya + shivling abhishek + mala jaap","Brush teeth, shower, full skincare — the weekly deep reset"],note:"Sunday ritual is the deepest of the week. Don't rush it."};
+const UC={st:t(9),en:t(11,30),name:"CSCI — long session",tag:"CSCI",fixed:false,tasks:["Triage first — what's due this week?","Do the highest-priority item first","If caught up: get one week ahead"],note:"Sunday + Saturday CSCI = 4.5 hrs dedicated + 75 min daily morning touches. You will not fall behind."};
+const UL={st:t(11,30),en:t(12,30),name:"Lunch + outside",tag:"Health",fixed:false,tasks:["Eat proper lunch, track macros","Walk outside 20 min — fresh air","Mid-Sunday reset"],note:""};
+const UR={st:t(12,30),en:t(14),name:"Weekly review + plan",tag:"Career",fixed:false,tasks:["Count this week's applications — hit targets?","Check referral list — who to follow up with?","Set 3 priorities for the coming week (just 3)","Check supplements taken consistently?","Plan each evening next week"],note:"15 minutes of Sunday planning saves 2 hours of Monday confusion."};
+const UA={st:t(14),en:t(16),name:"Job apps + LinkedIn",tag:"Career",fixed:false,tasks:["20–25 applications — Sunday submissions land in Monday inboxes","Set up new job alerts for sponsoring companies","Post one LinkedIn update"],note:""};
+const URest={st:t(16),en:t(17,30),name:"Rest — no guilt",tag:"Life",fixed:false,tasks:["Nap, browse saved IG reels, watch something","This is recovery — not laziness","You cannot sprint 7 days."],note:""};
+const UM={st:t(17,30),en:t(18,30),name:"Finish meal prep + dinner",tag:"Health",fixed:false,tasks:["Finish any meal prep not done Saturday","Eat dinner, track macros","Lay out tomorrow's clothes, pack bag tonight"],note:""};
+const UE={st:t(18,30),en:t(22),name:"Calm Sunday evening",tag:"Life",fixed:false,tasks:["Tirth time — low key, calm","Call family or a friend","No new tasks — you already did your work today"],note:""};
+const UWind={st:t(22),en:t(23),name:"Sunday wind down",tag:"Spirit",fixed:false,tasks:["Brush teeth + skincare","Isha Kriya or breathing to sleep","Bag packed, clothes out, water on nightstand","In bed by 11. 5am comes fast."],note:"How you end Sunday decides how Monday starts."};
+
+const DAYS=[
+  {name:"Monday",   short:"Mon",theme:"Job hunt night",       tc:"#7F77DD",tb:"#EEEDFE",intent:"Big application block tonight. One focus, done well. Reheat tonight — cooking starts Tuesday.",               blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_dinner,B.apps_big,B.tirth,B.wind]},
+  {name:"Tuesday",  short:"Tue",theme:"DSA + cook night",     tc:"#888780",tb:"#F1EFE8",intent:"DSA first while brain is sharpest, then cook a proper meal as your decompression. CSCI touch before bed.",        blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_cook,B.cook_tue,B.dsa,B.csci_touch,B.apps_med,B.wind]},
+  {name:"Wednesday",short:"Wed",theme:"CSCI + cook night",    tc:"#888780",tb:"#F1EFE8",intent:"Cook night again — different recipe, leftovers for Thursday lunch. CSCI full session after.",                      blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_cook,B.cook_wed,B.csci_long,B.upskill,B.apps_med,B.wind]},
+  {name:"Thursday", short:"Thu",theme:"Job apps + CSCI night",tc:"#7F77DD",tb:"#EEEDFE",intent:"Applications first while evening energy is highest, then CSCI touch. Reheating tonight — Wednesday leftovers.",   blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_dinner,B.apps_big,B.csci_touch,B.tirth_long,B.wind]},
+  {name:"Friday",   short:"Fri",theme:"Content + rest night", tc:"#BA7517",tb:"#FAEEDA",intent:"Content creation works Friday — you're more yourself when the week's pressure lifts. Reheat or order tonight.",    blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,FRI_D,B.content,B.apps_med,FRI_F,B.wind]},
+  {name:"Saturday", short:"Sat",theme:"Deep work + groceries",tc:"#7F77DD",tb:"#EEEDFE",intent:"No IBM. Jobs, CSCI, grocery run, meal prep, workout — then the evening is actually yours.",                        blocks:[SW,SB,SJ,SG,SL,SC,SP,SW2,SM,SLI,B.wind]},
+  {name:"Sunday",   short:"Sun",theme:"Reset day",            tc:"#D4537E",tb:"#FBEAF0",intent:"Not catch-up — reset. CSCI, planning, light prep, and early rest so Monday-you starts strong.",                    blocks:[UW,UC,UL,UR,UA,UG,UM,UE,UWind]},
+];
+
+const STORAGE_KEY = "life_os_v3";
+function loadState(){
+  try{ const r=localStorage.getItem(STORAGE_KEY); if(r) return JSON.parse(r); }catch(e){}
+  const s={};
+  DAYS.forEach(d=>{s[d.name]={};d.blocks.forEach((b,i)=>{s[d.name][i]=b.tasks.map(()=>false);});});
+  return s;
+}
+function saveState(s){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(s)); }catch(e){} }
+
+// ---- STATE ----
+let state = loadState();
+let activeDayIdx = (()=>{ const d=new Date().getDay(); return d===0?6:d-1; })();
+let view = "now"; // now | day | week
+let timerSec = 0, timerTotal = 0, timerLabel = "", timerColor = "#7F77DD", timerRunning = false, timerInterval = null;
+let openBlocks = {};
+let showRescue = false;
+let showInstall = !localStorage.getItem("install_dismissed");
+
+function todayIdx(){ const d=new Date().getDay(); return d===0?6:d-1; }
+function nowH(){ return new Date().getHours()+new Date().getMinutes()/60; }
+function fmtClock(){ const n=new Date(); let h=n.getHours(),m=n.getMinutes(),ap=h>=12?"PM":"AM"; h=h%12||12; return `${h}:${String(m).padStart(2,"0")} ${ap}`; }
+
+function getDayStats(dayName, blocks){
+  const s=state[dayName]||{};
+  let done=0,total=0;
+  blocks.forEach((b,i)=>{ (s[i]||[]).forEach(v=>{ total++; if(v) done++; }); });
+  return {done,total};
+}
+
+function startTimer(label, color, mins=25){
+  if(timerInterval) clearInterval(timerInterval);
+  timerSec=mins*60; timerTotal=mins*60; timerLabel=label; timerColor=color; timerRunning=true;
+  timerInterval=setInterval(()=>{
+    if(!timerRunning) return;
+    timerSec--;
+    if(timerSec<=0){ timerSec=0; timerRunning=false; clearInterval(timerInterval); }
+    renderTimer();
+  },1000);
+  render();
+}
+function stopTimer(){ clearInterval(timerInterval); timerSec=0; timerRunning=false; render(); }
+function pauseTimer(){ timerRunning=!timerRunning; renderTimer(); }
+
+function toggle(dayName, bi, ti){
+  if(!state[dayName]) state[dayName]={};
+  if(!state[dayName][bi]) state[dayName][bi]=DAYS.find(d=>d.name===dayName).blocks[bi].tasks.map(()=>false);
+  state[dayName][bi][ti]=!state[dayName][bi][ti];
+  saveState(state);
+  render();
+}
+
+function renderTimer(){
+  const el=document.getElementById("timer-widget");
+  if(!el) return;
+  if(timerSec<=0 && !timerRunning){ el.style.display="none"; return; }
+  el.style.display="block";
+  el.style.borderColor=timerColor;
+  el.querySelector(".timer-label").textContent=timerLabel;
+  el.querySelector(".timer-display").textContent=`${Math.floor(timerSec/60)}:${String(timerSec%60).padStart(2,"0")}`;
+  el.querySelector(".timer-fill").style.width=(timerSec/timerTotal*100)+"%";
+  el.querySelector(".timer-fill").style.background=timerColor;
+  el.querySelector(".pause-btn").textContent=timerRunning?"Pause":"Resume";
+}
+
+function render(){
+  const day = DAYS[activeDayIdx];
+  const now = nowH();
+  const {done,total} = getDayStats(day.name, day.blocks);
+  const pct = Math.round(done/total*100);
+  const tIdx = todayIdx();
+  const curBlockIdx = day.blocks.findIndex(b=>now>=b.st&&now<b.en);
+
+  let html = `
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <div class="app-title">Life OS</div>
+        <div class="header-meta">${day.name} · <span id="clk">${fmtClock()}</span></div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-big">${done}/${total}</div>
+        <div class="stat-label">tasks done</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="day-nav">
+      ${DAYS.map((d,i)=>`<button class="day-btn${i===tIdx?" today":""}${i===activeDayIdx?" active":""}" onclick="activeDayIdx=${i};view='day';render()">${d.short}</button>`).join("")}
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn${view==="now"?" active":""}" onclick="view='now';render()">▶ Now</button>
+      <button class="view-btn${view==="day"?" active":""}" onclick="view='day';render()">📋 Day</button>
+      <button class="view-btn${view==="week"?" active":""}" onclick="view='week';render()">📅 Week</button>
+    </div>
+  </div>`;
+
+  // Install banner
+  if(showInstall){
+    html+=`<div class="install-banner">
+      <div class="install-text"><b>Add to Home Screen</b> — tap Share in Safari, then "Add to Home Screen" to use this as an app.</div>
+      <button class="install-close" onclick="showInstall=false;localStorage.setItem('install_dismissed','1');this.closest('.install-banner').remove()">✕</button>
+    </div>`;
+  }
+
+  html+=`<div class="content">`;
+
+  // Timer widget
+  html+=`<div id="timer-widget" class="timer-card" style="display:${timerSec>0?"block":"none"};border-color:${timerColor}">
+    <div class="timer-top">
+      <div class="timer-label">${timerLabel}</div>
+      <div class="timer-controls">
+        <button class="timer-btn pause-btn" onclick="pauseTimer()">${timerRunning?"Pause":"Resume"}</button>
+        <button class="timer-btn" onclick="stopTimer()">Stop</button>
+      </div>
+    </div>
+    <div class="timer-display">${Math.floor(timerSec/60)}:${String(timerSec%60).padStart(2,"0")}</div>
+    <div class="timer-bar"><div class="timer-fill" style="width:${timerSec/timerTotal*100}%;background:${timerColor}"></div></div>
+    <div class="timer-note">Phone down. You're already doing it.</div>
+  </div>`;
+
+  // NOW VIEW
+  if(view==="now"){
+    if(curBlockIdx>=0){
+      const b=day.blocks[curBlockIdx];
+      const col=C[b.tag];
+      const tasks=(state[day.name]||{})[curBlockIdx]||b.tasks.map(()=>false);
+      html+=`<div class="now-card" style="border-color:${col.color};background:${col.bg}">
+        <div class="now-label" style="color:${col.tc}">Do this now · ${fmtH(b.st)}–${fmtH(b.en)}</div>
+        <div class="now-name" style="color:${col.tc}">${b.name}</div>
+        ${b.note?`<div class="now-note" style="color:${col.tc}">${b.note}</div>`:""}
+        <div>
+          ${b.tasks.map((t,ti)=>`
+          <div class="task-row" onclick="toggle('${day.name}',${curBlockIdx},${ti})" style="background:rgba(0,0,0,0.06)">
+            <div class="chk" style="border-color:${tasks[ti]?col.color:col.tc};background:${tasks[ti]?col.color:"transparent"}">${tasks[ti]?"✓":""}</div>
+            <div class="task-text${tasks[ti]?" done":""}" style="color:${col.tc}">${t}</div>
+          </div>`).join("")}
+        </div>
+        ${!b.fixed?`<button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">▶ Start 25-min timer</button>`:""}
+      </div>`;
+
+      // Next block
+      if(curBlockIdx<day.blocks.length-1){
+        const nb=day.blocks[curBlockIdx+1];
+        const nc=C[nb.tag];
+        html+=`<div class="next-block">
+          <div class="next-label">Up next · ${fmtH(nb.st)}</div>
+          <div class="next-name" style="color:${nc.color}">${nb.name} <span class="tag-pill" style="background:${nc.bg};color:${nc.tc}">${nb.tag}</span></div>
+        </div>`;
+      }
+    } else {
+      html+=`<div style="background:var(--bg2);border-radius:12px;padding:20px;text-align:center;color:var(--sub);font-size:14px;border:0.5px solid var(--border)">No scheduled block right now.<br><span style="font-size:12px">Check the Day view for your full schedule.</span></div>`;
+    }
+
+    // Rescue
+    html+=`<button class="rescue-toggle" onclick="showRescue=!showRescue;render()">😵 Overwhelmed? Open rescue mode</button>`;
+    if(showRescue){
+      const rescues=[["Ground first","5 breaths + water. Nothing else yet."],["Tiniest job task","Open resume. Change one word. Done."],["Eat something","Doesn't have to be perfect. Just eat."],["Move","Stand up. Walk around. 2 minutes."],["Text Tirth","One kind thing. That's all."],["Reset screen","Close everything. One tab only."]];
+      html+=`<div class="rescue-panel">
+        <div class="rescue-title">Pick just one tiny thing</div>
+        <div class="rescue-grid">
+          ${rescues.map(([t,s])=>`<div class="rescue-item" onclick="showRescue=false;render()"><b>${t}</b><span>${s}</span></div>`).join("")}
+        </div>
+      </div>`;
+    }
+  }
+
+  // DAY VIEW
+  if(view==="day"){
+    html+=`<div class="day-header">
+      <div class="day-title-big">${day.name}</div>
+      <span class="theme-pill" style="background:${day.tb};color:${day.tc}">${day.theme}</span>
+      <div class="day-intent">${day.intent}</div>
+    </div>`;
+    day.blocks.forEach((b,bi)=>{
+      const col=C[b.tag];
+      const tasks=(state[day.name]||{})[bi]||b.tasks.map(()=>false);
+      const done=tasks.filter(Boolean).length;
+      const isCurrent=bi===curBlockIdx;
+      const isPast=now>=b.en;
+      const isOpen=openBlocks[`${activeDayIdx}-${bi}`]||isCurrent;
+      html+=`<div class="block-card${isCurrent?" current":""}${isPast?" past":""}" style="${isCurrent?`border-color:${col.color}`:""}" id="bc-${bi}">
+        <div class="block-head" onclick="openBlocks['${activeDayIdx}-${bi}']=!openBlocks['${activeDayIdx}-${bi}'];render()">
+          <div class="block-time">${fmtH(b.st)}</div>
+          <div class="block-name" style="color:${isCurrent?col.color:"var(--text)"}">
+            ${b.name}${b.fixed?`<span class="fixed-badge">fixed</span>`:""}
+          </div>
+          <span class="tag-pill" style="background:${col.bg};color:${col.tc}">${b.tag}</span>
+          ${done>0?`<span class="block-prog">${done}/${b.tasks.length}</span>`:""}
+          <span class="chevron${isOpen?" open":""}">⌄</span>
+        </div>
+        ${isOpen?`<div class="block-body open">
+          ${b.tasks.map((t,ti)=>`
+          <div class="task-row" onclick="toggle('${day.name}',${bi},${ti})">
+            <div class="chk" style="border-color:${tasks[ti]?"#7F77DD":"var(--border)"};background:${tasks[ti]?"#7F77DD":"transparent"}">${tasks[ti]?"✓":""}</div>
+            <div class="task-text${tasks[ti]?" done":""}">${t}</div>
+          </div>`).join("")}
+          ${b.note?`<div class="block-note">${b.note}</div>`:""}
+          ${!b.fixed?`<button class="mini-timer-btn" onclick="startTimer('${b.name}','${col.color}')">▶ 25-min timer</button>`:""}
+        </div>`:""}
+      </div>`;
+    });
+  }
+
+  // WEEK VIEW
+  if(view==="week"){
+    html+=`<div style="font-size:13px;color:var(--sub);margin-bottom:12px">Your week at a glance — tap to switch days.</div>`;
+    DAYS.forEach((d,i)=>{
+      const {done,total}=getDayStats(d.name,d.blocks);
+      const p=Math.round(done/total*100);
+      html+=`<div class="week-row${i===tIdx?" today":""}" onclick="activeDayIdx=${i};view='day';render()">
+        <div class="week-day" style="color:${i===tIdx?"#7F77DD":"var(--text)"}">${d.short}</div>
+        <div class="week-meta">
+          <div class="week-theme">${d.theme}</div>
+          <div class="week-bar"><div class="week-fill" style="width:${p}%;background:${d.tc}"></div></div>
+        </div>
+        <div class="week-count">${done}/${total}</div>
+      </div>`;
+    });
+  }
+
+  html+=`</div>`;
+  document.getElementById("app").innerHTML=html;
+  renderTimer();
+}
+
+// Clock tick
+setInterval(()=>{ const el=document.getElementById("clk"); if(el) el.textContent=fmtClock(); },1000);
+
+render();
+</script>
+</body>
+</html>
