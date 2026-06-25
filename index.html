@@ -140,6 +140,43 @@
   .dash-day-lbl{font-size:10px;color:var(--sub);margin-bottom:6px}
   .dash-ring-mini{margin:0 auto 4px}
 
+  /* Monthly history */
+  .stats-tabs{display:flex;gap:6px;margin-bottom:16px}
+  .stats-tab{flex:1;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--sub);font-size:13px;font-weight:500}
+  .stats-tab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .month-arrow{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center}
+  .month-arrow:disabled{opacity:.3}
+  .month-label{font-size:15px;font-weight:600;color:var(--text)}
+  .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+  .sum-card{background:var(--bg2);border-radius:var(--radius);padding:14px;border:0.5px solid var(--border)}
+  .sum-val{font-size:22px;font-weight:600}
+  .sum-lbl{font-size:11px;color:var(--sub);margin-top:2px}
+  .sum-sub{font-size:10px;color:var(--sub);margin-top:4px}
+  .cal-wrap{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:20px}
+  .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+  .cal-dow div{text-align:center;font-size:10px;color:var(--sub)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:1.5px solid transparent;position:relative}
+  .cal-cell.sel{border-color:var(--text)}
+  .cal-cell.empty{background:transparent!important;cursor:default}
+  .cal-dots{display:flex;gap:2px;height:5px;margin-top:2px}
+  .cal-dot{width:4px;height:4px;border-radius:50%}
+  .cat-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .cat-name{font-size:12px;width:66px;flex-shrink:0;color:var(--text)}
+  .cat-track{flex:1;height:8px;background:var(--bg3);border-radius:100px;overflow:hidden}
+  .cat-fill{height:8px;border-radius:100px;transition:width .4s}
+  .cat-val{font-size:11px;color:var(--sub);width:48px;text-align:right;flex-shrink:0}
+  .trend-block{margin-bottom:16px}
+  .trend-head{display:flex;justify-content:space-between;margin-bottom:6px}
+  .trend-name{font-size:12px;color:var(--text)}
+  .trend-avg{font-size:11px;color:var(--sub)}
+  .trend-bars{display:flex;gap:2px;align-items:flex-end;height:44px}
+  .tb{flex:1;background:var(--bg3);border-radius:2px;display:flex;align-items:flex-end;overflow:hidden;min-width:2px}
+  .tb-fill{width:100%;border-radius:2px;transition:height .3s}
+  .day-detail{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:20px;border:0.5px solid var(--border)}
+  .day-detail-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)}
+
   @media(prefers-color-scheme:light){
     :root{--bg:#f5f5f5;--bg2:#fff;--bg3:#ebebeb;--border:#ddd;--text:#111;--sub:#777}
   }
@@ -223,18 +260,24 @@ const DAYS=[
 ];
 
 // Storage
-const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps",MEALS_K="life_os_meals";
+const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps",MEALS_K="life_os_meals",ARCH_K="life_os_archive";
+const TAGS={Spirit:"#D4537E",Body:"#5DCAA5",Health:"#D85A30",IBM:"#9a9a9a",Career:"#7F77DD",Skills:"#1D9E75",CSCI:"#888780",Content:"#BA7517",Life:"#378ADD"};
 function todayKey(){const n=new Date();return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`;}
+function dateKey(d){return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function weekIdToDate(w){const p=w.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
 function getWeekId(){const now=new Date(),day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));return `${mon.getFullYear()}-${mon.getMonth()+1}-${mon.getDate()}`;}
 function freshState(){const s={};DAYS.forEach(d=>{s[d.name]={};d.blocks.forEach((b,i)=>{s[d.name][i]=b.tasks.map(()=>false);});});return s;}
 function loadState(){
   try{
     const sw=localStorage.getItem(WK),cw=getWeekId();
-    if(sw!==cw){localStorage.setItem(WK,cw);const s=freshState();localStorage.setItem(SK,JSON.stringify(s));return s;}
+    if(sw!==cw){
+      if(sw){try{const old=JSON.parse(localStorage.getItem(SK)||"null");if(old)archiveStateFor(sw,old);}catch(e){}}
+      localStorage.setItem(WK,cw);const s=freshState();localStorage.setItem(SK,JSON.stringify(s));return s;
+    }
     const r=localStorage.getItem(SK);if(r)return JSON.parse(r);
   }catch(e){}return freshState();
 }
-function saveState(s){try{localStorage.setItem(SK,JSON.stringify(s));pushRemote("state",s);}catch(e){}}
+function saveState(s){try{localStorage.setItem(SK,JSON.stringify(s));pushRemote("state",s);archiveStateFor(getWeekId(),s);}catch(e){}}
 function loadWater(){try{const r=localStorage.getItem(WATER_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
 function saveWater(v){try{const d=JSON.parse(localStorage.getItem(WATER_K)||"{}");d[todayKey()]=v;localStorage.setItem(WATER_K,JSON.stringify(d));pushRemote("water",d);}catch(e){}}
 function loadSteps(){try{const r=localStorage.getItem(STEPS_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
@@ -249,6 +292,15 @@ function loadWeekData(){
   return {water,steps};
 }
 
+// ---- Date-wise task/category archive ----
+function dayStatsFromState(dayObj,st){
+  const ds=(st&&st[dayObj.name])||{};let done=0,total=0;const tags={};
+  dayObj.blocks.forEach((b,i)=>{const arr=ds[i]||[];const tt=b.tasks.length;let dn=0;for(let j=0;j<tt;j++){if(arr[j])dn++;}done+=dn;total+=tt;if(!tags[b.tag])tags[b.tag]={d:0,t:0};tags[b.tag].d+=dn;tags[b.tag].t+=tt;});
+  return {done,total,tags};
+}
+function loadArchive(){try{const r=localStorage.getItem(ARCH_K);if(r)return JSON.parse(r);}catch(e){}return {};}
+function archiveStateFor(weekId,st){try{const mon=weekIdToDate(weekId),a=loadArchive();for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);a[dateKey(d)]=dayStatsFromState(DAYS[i],st);}localStorage.setItem(ARCH_K,JSON.stringify(a));pushRemote("archive",a);}catch(e){}}
+
 // ---- Cloud sync helpers ----
 async function sbGetAll(){const res=await fetch(`${REST}?select=key,value`,{headers:SB_HEADERS});if(!res.ok)throw new Error("sb "+res.status);return res.json();}
 async function sbUpsert(key,value){await fetch(REST,{method:"POST",headers:{...SB_HEADERS,Prefer:"resolution=merge-duplicates"},body:JSON.stringify({key,value})});}
@@ -259,11 +311,16 @@ async function syncFromRemote(){
     const rows=await sbGetAll(),map={};
     rows.forEach(r=>map[r.key]=r.value);
     const cw=getWeekId();
+    if(map.archive)localStorage.setItem(ARCH_K,JSON.stringify(map.archive));
     if(map.week===cw&&map.state){localStorage.setItem(WK,cw);localStorage.setItem(SK,JSON.stringify(map.state));state=map.state;}
-    else{const fresh=freshState();localStorage.setItem(WK,cw);localStorage.setItem(SK,JSON.stringify(fresh));state=fresh;pushRemote("week",cw);pushRemote("state",fresh);}
+    else{
+      if(map.week&&map.state)archiveStateFor(map.week,map.state);
+      const fresh=freshState();localStorage.setItem(WK,cw);localStorage.setItem(SK,JSON.stringify(fresh));state=fresh;pushRemote("week",cw);pushRemote("state",fresh);
+    }
     if(map.water)localStorage.setItem(WATER_K,JSON.stringify(map.water));
     if(map.steps)localStorage.setItem(STEPS_K,JSON.stringify(map.steps));
     if(map.meals)localStorage.setItem(MEALS_K,JSON.stringify(map.meals));
+    archiveStateFor(cw,state);
     waterLevel=loadWater();stepsVal=loadSteps();
     render();
   }catch(e){}
@@ -283,6 +340,9 @@ let showInstall=!localStorage.getItem("install_dismissed");
 let waterLevel=loadWater();
 let stepsVal=loadSteps();
 let stepsInput=stepsVal||"";
+let statsTab="week";
+let monthOffset=0;
+let selMonthKey=null;
 
 function getDayStats(dayName,blocks){
   const s=state[dayName]||{};let done=0,total=0;
@@ -457,6 +517,86 @@ function dashboardHTML(){
   </div>`;
 }
 
+function monthData(offset){
+  const base=new Date();base.setDate(1);base.setMonth(base.getMonth()+offset);
+  const year=base.getFullYear(),month=base.getMonth();
+  const first=new Date(year,month,1),last=new Date(year,month+1,0);
+  const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog();
+  const days=[];
+  for(let dn=1;dn<=last.getDate();dn++){const dt=new Date(year,month,dn),k=dateKey(dt);days.push({day:dn,key:k,water:water[k]||0,steps:steps[k]||0,meals:(meals[k]||[]).length,tasks:arch[k]||null});}
+  return {year,month,first,last,days};
+}
+function barChart(values,max,color){
+  return `<div class="trend-bars">${values.map(v=>{const h=max?Math.min(100,(v/max)*100):0;return `<div class="tb"><div class="tb-fill" style="height:${h}%;background:${color}"></div></div>`;}).join("")}</div>`;
+}
+function monthHTML(){
+  const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const md=monthData(monthOffset);
+  const today=new Date();today.setHours(0,0,0,0);
+  let wSum=0,wN=0,sSum=0,sN=0,tD=0,tT=0,mealCount=0;const catAgg={};
+  md.days.forEach(d=>{
+    if(d.water>0){wSum+=d.water;wN++;}
+    if(d.steps>0){sSum+=d.steps;sN++;}
+    mealCount+=d.meals;
+    if(d.tasks){tD+=d.tasks.done;tT+=d.tasks.total;Object.entries(d.tasks.tags||{}).forEach(([tag,v])=>{if(!catAgg[tag])catAgg[tag]={d:0,t:0};catAgg[tag].d+=v.d;catAgg[tag].t+=v.t;});}
+  });
+  const avgW=wN?wSum/wN:0,avgS=sN?Math.round(sSum/sN):0,taskPct=tT?Math.round(tD/tT*100):0;
+
+  let html=`<div class="month-nav">
+    <button class="month-arrow" onclick="monthOffset--;selMonthKey=null;render()">‹</button>
+    <div class="month-label">${MONTHS[md.month]} ${md.year}</div>
+    <button class="month-arrow" onclick="monthOffset=Math.min(0,monthOffset+1);selMonthKey=null;render()" ${monthOffset>=0?"disabled":""}>›</button>
+  </div>`;
+
+  html+=`<div class="sum-grid">
+    <div class="sum-card"><div class="sum-val" style="color:#378ADD">${avgW.toFixed(1)}L</div><div class="sum-lbl">Avg water / logged day</div><div class="sum-sub">${wN} days tracked</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#1D9E75">${avgS.toLocaleString()}</div><div class="sum-lbl">Avg steps / logged day</div><div class="sum-sub">${sN} days tracked</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#7F77DD">${taskPct}%</div><div class="sum-lbl">Task completion</div><div class="sum-sub">${tD}/${tT} tasks</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#D4537E">${mealCount}</div><div class="sum-lbl">Meals logged</div><div class="sum-sub">this month</div></div>
+  </div>`;
+
+  const lead=(md.first.getDay()===0?6:md.first.getDay()-1);
+  html+=`<div class="cal-wrap"><div class="cal-dow">${["M","T","W","T","F","S","S"].map(x=>`<div>${x}</div>`).join("")}</div><div class="cal-grid">`;
+  for(let i=0;i<lead;i++)html+=`<div class="cal-cell empty"></div>`;
+  md.days.forEach(d=>{
+    const dt=new Date(md.year,md.month,d.day),future=dt>today;
+    const pct=d.tasks&&d.tasks.total?Math.round(d.tasks.done/d.tasks.total*100):0;
+    const bg=pct>0?`rgba(127,119,221,${(0.18+0.82*pct/100).toFixed(2)})`:"var(--bg3)";
+    const tcol=pct>=45?"#fff":"var(--text)";
+    const dots=[d.water>=WATER_GOAL?`<div class="cal-dot" style="background:#378ADD"></div>`:"",d.steps>=STEPS_GOAL?`<div class="cal-dot" style="background:#1D9E75"></div>`:"",d.meals>=3?`<div class="cal-dot" style="background:#D4537E"></div>`:""].join("");
+    html+=`<div class="cal-cell${selMonthKey===d.key?" sel":""}" style="background:${bg};opacity:${future?.4:1};color:${tcol}" onclick="selMonthKey='${d.key}';render()">${d.day}<div class="cal-dots">${dots}</div></div>`;
+  });
+  html+=`</div></div>`;
+
+  if(selMonthKey){
+    const dd=md.days.find(x=>x.key===selMonthKey);
+    if(dd){
+      const p=selMonthKey.split("-").map(Number);
+      const lbl=new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
+      html+=`<div class="day-detail"><div class="day-detail-title">${lbl}</div>
+        <div class="cat-row"><div class="cat-name">Water</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.water/WATER_GOAL*100)}%;background:#378ADD"></div></div><div class="cat-val">${dd.water}L</div></div>
+        <div class="cat-row"><div class="cat-name">Steps</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.steps/STEPS_GOAL*100)}%;background:#1D9E75"></div></div><div class="cat-val">${dd.steps.toLocaleString()}</div></div>
+        <div class="cat-row"><div class="cat-name">Meals</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.meals/3*100)}%;background:#D4537E"></div></div><div class="cat-val">${dd.meals}/3</div></div>
+        <div class="cat-row"><div class="cat-name">Tasks</div><div class="cat-track"><div class="cat-fill" style="width:${dd.tasks&&dd.tasks.total?Math.round(dd.tasks.done/dd.tasks.total*100):0}%;background:#7F77DD"></div></div><div class="cat-val">${dd.tasks?dd.tasks.done+"/"+dd.tasks.total:"—"}</div></div>
+      </div>`;
+    }
+  }
+
+  const cats=Object.keys(catAgg).sort((a,b)=>(catAgg[b].t?catAgg[b].d/catAgg[b].t:0)-(catAgg[a].t?catAgg[a].d/catAgg[a].t:0));
+  if(cats.length){
+    html+=`<div class="dash-title">By category</div>`;
+    cats.forEach(tag=>{const v=catAgg[tag],p=v.t?Math.round(v.d/v.t*100):0;html+=`<div class="cat-row"><div class="cat-name">${tag}</div><div class="cat-track"><div class="cat-fill" style="width:${p}%;background:${TAGS[tag]||"#888"}"></div></div><div class="cat-val">${p}%</div></div>`;});
+  } else {
+    html+=`<div style="font-size:12px;color:var(--sub);text-align:center;padding:14px 0">No task history yet for this month — it builds as you check things off.</div>`;
+  }
+
+  html+=`<div class="dash-title" style="margin-top:20px">Daily trends</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Task completion</div><div class="trend-avg">${taskPct}% avg</div></div>${barChart(md.days.map(d=>d.tasks&&d.tasks.total?Math.round(d.tasks.done/d.tasks.total*100):0),100,"#7F77DD")}</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Water (L)</div><div class="trend-avg">goal 2.5L</div></div>${barChart(md.days.map(d=>d.water),WATER_GOAL,"#378ADD")}</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Steps</div><div class="trend-avg">goal 8k</div></div>${barChart(md.days.map(d=>d.steps),STEPS_GOAL,"#1D9E75")}</div>`;
+  return html;
+}
+
 function render(){
   const day=DAYS[activeDayIdx];
   const now=nowH();
@@ -496,7 +636,11 @@ function render(){
   if(view==="dash"){
     html+=waterHTML();
     html+=stepsHTML();
-    html+=dashboardHTML();
+    html+=`<div class="stats-tabs">
+      <button class="stats-tab${statsTab==="week"?" active":""}" onclick="statsTab='week';render()">This week</button>
+      <button class="stats-tab${statsTab==="month"?" active":""}" onclick="statsTab='month';render()">Monthly history</button>
+    </div>`;
+    html+=statsTab==="week"?dashboardHTML():monthHTML();
   }
 
   // NOW VIEW
@@ -587,6 +731,7 @@ function render(){
 }
 
 setInterval(()=>{const el=document.getElementById("clk");if(el)el.textContent=fmtClock();},1000);
+archiveStateFor(getWeekId(),state);
 render();
 
 if(SYNC_ON){
