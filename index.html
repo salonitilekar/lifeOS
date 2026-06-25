@@ -35,17 +35,17 @@
   .day-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
   .day-btn.today.active{background:#7F77DD;color:#fff;border-color:#7F77DD}
   .content{padding:14px 16px calc(128px + env(safe-area-inset-bottom))}
-  /* Bottom navigation */
-  .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--bg);border-top:0.5px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
+  /* Bottom navigation — liquid glass */
+  .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:60;padding-bottom:env(safe-area-inset-bottom);background:rgba(9,9,11,.68);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-top:0.5px solid rgba(255,255,255,.1);box-shadow:0 -8px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06)}
   .day-strip{display:flex;gap:5px;padding:9px 12px 3px}
-  .dbtn{flex:1;padding:6px 0;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--sub);font-size:12px;font-weight:600;text-align:center;transition:all .15s}
-  .dbtn.today{border-color:#7F77DD;color:#7F77DD}
-  .dbtn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
-  .dbtn.today.active{background:#7F77DD;color:#fff;border-color:#7F77DD}
-  .tab-bar{display:flex;padding:4px 6px 6px}
-  .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border:none;background:none;color:var(--sub);font-size:10px;font-weight:500}
-  .tab-btn.active{color:var(--text)}
-  .tab-btn.active .ic{color:#7F77DD}
+  .dbtn{flex:1;padding:6px 0;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--sub);font-size:12px;font-weight:600;text-align:center;transition:all .15s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .dbtn.today{border-color:rgba(127,119,221,.55);color:#9d96e8;background:rgba(127,119,221,.12)}
+  .dbtn.active{background:rgba(250,250,250,.92);color:#09090b;border-color:rgba(250,250,250,.92);box-shadow:0 2px 12px rgba(0,0,0,.15)}
+  .dbtn.today.active{background:#7F77DD;color:#fff;border-color:#7F77DD;box-shadow:0 2px 14px rgba(127,119,221,.45)}
+  .tab-bar{display:flex;padding:4px 8px 8px}
+  .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border:none;background:none;color:var(--sub);font-size:10px;font-weight:500;border-radius:10px;transition:color .15s,background .15s}
+  .tab-btn.active{color:var(--text);background:rgba(255,255,255,.06)}
+  .tab-btn.active .ic{color:#9d96e8}
   /* Collapsed tracker summary */
   .track-collapsed{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 14px;margin-bottom:12px;cursor:pointer}
   .tc-title{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--text)}
@@ -188,6 +188,7 @@
   .cat-track{flex:1;height:8px;background:var(--bg3);border-radius:100px;overflow:hidden}
   .cat-fill{height:8px;border-radius:100px;transition:width .4s}
   .cat-val{font-size:11px;color:var(--sub);width:48px;text-align:right;flex-shrink:0}
+  .cat-sub{font-size:10px;color:var(--sub);margin:-6px 0 10px 76px}
   .trend-block{margin-bottom:16px}
   .trend-head{display:flex;justify-content:space-between;margin-bottom:6px}
   .trend-name{font-size:12px;color:var(--text)}
@@ -265,6 +266,11 @@
 
   @media(prefers-color-scheme:light){
     :root{--bg:#fafafa;--bg2:#ffffff;--bg3:#f4f4f5;--border:#e4e4e7;--text:#09090b;--sub:#71717a}
+    .bottom-nav{background:rgba(250,250,250,.72);border-top-color:rgba(0,0,0,.08);box-shadow:0 -8px 32px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.8)}
+    .dbtn{border-color:rgba(0,0,0,.08);background:rgba(255,255,255,.55)}
+    .dbtn.today{border-color:rgba(127,119,221,.45);color:#5b52c4;background:rgba(127,119,221,.1)}
+    .dbtn.active{background:rgba(9,9,11,.9);color:#fafafa;border-color:rgba(9,9,11,.9)}
+    .tab-btn.active{background:rgba(0,0,0,.05)}
   }
 </style>
 </head>
@@ -444,8 +450,23 @@ function loadWeekData(){
 // ---- Date-wise task/category archive ----
 function dayStatsFromState(dayObj,st){
   const ds=(st&&st[dayObj.name])||{};let done=0,total=0;const tags={};
-  dayObj.blocks.forEach((b,i)=>{const arr=ds[i]||[];const tt=b.tasks.length;let dn=0;for(let j=0;j<tt;j++){if(arr[j])dn++;}done+=dn;total+=tt;if(!tags[b.tag])tags[b.tag]={d:0,t:0};tags[b.tag].d+=dn;tags[b.tag].t+=tt;});
+  dayObj.blocks.forEach((b,i)=>{const raw=ds[i];const tt=b.tasks.length;let dn=0;for(let j=0;j<tt;j++){if(raw&&(raw[j]||raw[String(j)]))dn++;}done+=dn;total+=tt;if(!tags[b.tag])tags[b.tag]={d:0,t:0};tags[b.tag].d+=dn;tags[b.tag].t+=tt;});
   return {done,total,tags};
+}
+function weekDayIndexForKey(k){
+  const p=k.split("-").map(Number);
+  const d=new Date(p[0],p[1]-1,p[2]);d.setHours(12,0,0,0);
+  const mon=weekIdToDate(getWeekId());mon.setHours(12,0,0,0);
+  const diff=Math.round((d-mon)/86400000);
+  return (diff>=0&&diff<7)?diff:-1;
+}
+function tasksForDate(k){
+  const wi=weekDayIndexForKey(k);
+  if(wi>=0)return dayStatsFromState(DAYS[wi],state);
+  const entry=loadArchive()[k];
+  if(!entry)return null;
+  if(entry.tags&&Object.keys(entry.tags).length)return entry;
+  return entry;
 }
 function loadArchive(){try{const r=localStorage.getItem(ARCH_K);if(r)return JSON.parse(r);}catch(e){}return {};}
 function archiveStateFor(weekId,st){try{const mon=weekIdToDate(weekId),a=loadArchive();for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);a[dateKey(d)]=dayStatsFromState(DAYS[i],st);}localStorage.setItem(ARCH_K,JSON.stringify(a));pushRemote("archive",a);}catch(e){}}
@@ -793,9 +814,9 @@ function monthData(offset){
   const base=new Date();base.setDate(1);base.setMonth(base.getMonth()+offset);
   const year=base.getFullYear(),month=base.getMonth();
   const first=new Date(year,month,1),last=new Date(year,month+1,0);
-  const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll(),journal=loadJournalAll();
+  const {water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll(),journal=loadJournalAll();
   const days=[];
-  for(let dn=1;dn<=last.getDate();dn++){const dt=new Date(year,month,dn),k=dateKey(dt);days.push({day:dn,key:k,water:water[k]||0,steps:steps[k]||0,meals:(meals[k]||[]).length,screen:(k in screen)?screen[k]:null,mood:(journal[k]&&journal[k].mood)||null,tasks:arch[k]||null});}
+  for(let dn=1;dn<=last.getDate();dn++){const dt=new Date(year,month,dn),k=dateKey(dt);days.push({day:dn,key:k,water:water[k]||0,steps:steps[k]||0,meals:(meals[k]||[]).length,screen:(k in screen)?screen[k]:null,mood:(journal[k]&&journal[k].mood)||null,tasks:tasksForDate(k)});}
   return {year,month,first,last,days};
 }
 function barChart(values,max,color){
@@ -861,10 +882,28 @@ function monthHTML(){
     }
   }
 
-  const cats=Object.keys(catAgg).sort((a,b)=>(catAgg[b].t?catAgg[b].d/catAgg[b].t:0)-(catAgg[a].t?catAgg[a].d/catAgg[a].t:0));
-  if(cats.length){
+  const wDays=md.days.filter(d=>d.water>0);
+  if(wDays.length)catAgg["Water"]={d:wDays.filter(d=>d.water>=WATER_GOAL).length,t:wDays.length,kind:"tracker",color:"#378ADD",label:"days at 2.5L"};
+  const sDays=md.days.filter(d=>d.steps>0);
+  if(sDays.length)catAgg["Steps"]={d:sDays.filter(d=>d.steps>=STEPS_GOAL).length,t:sDays.length,kind:"tracker",color:"#1D9E75",label:"days at 8k"};
+  const mDays=md.days.filter(d=>d.meals>0);
+  if(mDays.length)catAgg["Meals"]={d:md.days.filter(d=>d.meals>=3).length,t:mDays.length,kind:"tracker",color:"#D4537E",label:"days all 3 logged"};
+  const scrDays=md.days.filter(d=>d.screen!==null);
+  if(scrDays.length)catAgg["Doomscroll"]={d:scrDays.filter(d=>d.screen<=SCREEN_LIMIT).length,t:scrDays.length,kind:"tracker",color:"#B07FE0",label:"days under limit"};
+  const allCats=Object.keys(catAgg).sort((a,b)=>{
+    const pa=catAgg[a].t?catAgg[a].d/catAgg[a].t:0,pb=catAgg[b].t?catAgg[b].d/catAgg[b].t:0;
+    if(catAgg[a].kind==="tracker"&&catAgg[b].kind!=="tracker")return 1;
+    if(catAgg[b].kind==="tracker"&&catAgg[a].kind!=="tracker")return -1;
+    return pb-pa;
+  });
+  if(allCats.length){
     html+=`<div class="dash-title">By category</div>`;
-    cats.forEach(tag=>{const v=catAgg[tag],p=v.t?Math.round(v.d/v.t*100):0;html+=`<div class="cat-row"><div class="cat-name">${tag}</div><div class="cat-track"><div class="cat-fill" style="width:${p}%;background:${TAGS[tag]||"#888"}"></div></div><div class="cat-val">${p}%</div></div>`;});
+    allCats.forEach(tag=>{
+      const v=catAgg[tag],p=v.t?Math.round(v.d/v.t*100):0;
+      const col=v.color||TAGS[tag]||"#888";
+      const sub=v.kind==="tracker"?`${v.d}/${v.t} ${v.label}`:`${v.d}/${v.t} tasks`;
+      html+=`<div class="cat-row"><div class="cat-name">${tag}</div><div class="cat-track"><div class="cat-fill" style="width:${p}%;background:${col}"></div></div><div class="cat-val">${p}%</div></div><div class="cat-sub">${sub}</div>`;
+    });
   } else {
     html+=`<div style="font-size:12px;color:var(--sub);text-align:center;padding:14px 0">No task history yet for this month — it builds as you check things off.</div>`;
   }
