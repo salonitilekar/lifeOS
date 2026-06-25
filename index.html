@@ -238,11 +238,6 @@
   .streak-num{font-size:36px;font-weight:700;line-height:1;color:var(--text)}
   .streak-unit{font-size:14px;font-weight:500;color:var(--sub);margin-left:6px}
   .streak-lbl{font-size:12px;color:var(--sub);margin-top:5px}
-  .streak-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
-  .streak-chip{background:var(--bg3);border-radius:12px;padding:9px 4px;text-align:center}
-  .streak-chip span{display:flex;justify-content:center;margin-bottom:3px}
-  .streak-chip b{font-size:17px;font-weight:700;display:block;margin-top:2px;color:var(--text)}
-  .streak-chip i{font-size:9px;color:var(--sub);font-style:normal;display:block;margin-top:1px}
   .medal-row{display:flex;justify-content:space-between;gap:4px;margin-bottom:12px}
   .medal{flex:1;text-align:center}
   .medal-ico{line-height:0;display:flex;justify-content:center;margin-bottom:4px}
@@ -316,7 +311,7 @@ const B={
   content:   {st:t(20,30),en:t(21,30), name:"Content creation",     tag:"Content",fixed:false,meals:[],tasks:["Film or draft one piece — YouTube, reel, or LinkedIn carousel","Your IBM + job hunt journey IS the content","Post something — imperfect and posted beats perfect in drafts forever"],note:"Friday you're more yourself. Content made relaxed is better content."},
   tirth:     {st:t(22),   en:t(22,30), name:"Tirth + connect",      tag:"Life",   fixed:false,meals:[],tasks:["Short time with Tirth — talk, decompress together","You're both in the same grind. Be each other's calm.","Transition to sleep mode"],note:""},
   tirth_long:{st:t(22),   en:t(22,30), name:"Tirth time",           tag:"Life",   fixed:false,meals:[],tasks:["Time with Tirth — no stress talk, just be together","Or call family / a friend","Connection is necessary, not a reward"],note:""},
-  wind:      {st:t(22,30),en:t(23),    name:"Night wind down",      tag:"Spirit", fixed:false,meals:[],tasks:["Brush teeth (2 min)","Skincare: cleanser + moisturiser","Write 3 wins from today — tiny ones count","Lay out tomorrow's clothes + pack bag","Phone on DND. In bed by 11."],note:"6 hours (11pm–5am) is the minimum. Every minute past 11 steals from 5am-you."},
+  wind:      {st:t(22,30),en:t(23),    name:"Night wind down",      tag:"Spirit", fixed:false,meals:[],tasks:["Brush teeth (2 min)","Skincare: cleanser + moisturiser","Write 3 wins from today — tiny ones count","Log today's journal (mood + a few lines)","Lay out tomorrow's clothes + pack bag","Phone on DND. In bed by 11."],note:"6 hours (11pm–5am) is the minimum. Every minute past 11 steals from 5am-you."},
 };
 
 const FRI_D={st:t(18,30),en:t(19,30),name:"Decompress — actually",tag:"Life",fixed:false,meals:[],tasks:["No work. You did 9–5 all week.","Walk, music, Tirth — whatever recharges you","Eat dinner, something you enjoy"],note:"You earned this hour."};
@@ -491,7 +486,7 @@ function nowH(){return new Date().getHours()+new Date().getMinutes()/60;}
 let state=loadState();
 let activeDayIdx=todayIdx();
 let view="now";
-const VIEWS=["now","day","month","dash"];
+const VIEWS=["now","day","journal","month","dash"];
 let secOpen={};
 function toggleSec(key){secOpen[key]=!secOpen[key];render();}
 let timerSec=0,timerTotal=0,timerLabel="",timerColor="#7F77DD",timerRunning=false,timerInterval=null;
@@ -633,15 +628,10 @@ const MEDALS=[{n:3,icon:"medal",color:"#CD7F32",name:"Getting started"},{n:7,ico
 function streakHTML(){
   const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll();
   const active=k=>((water[k]||0)>0)||((steps[k]||0)>0)||((meals[k]||[]).length>0)||(k in screen)||(arch[k]&&arch[k].done>0);
-  const waterG=k=>(water[k]||0)>=WATER_GOAL;
-  const stepsG=k=>(steps[k]||0)>=STEPS_GOAL;
-  const tasksG=k=>arch[k]&&arch[k].total&&(arch[k].done/arch[k].total)>=0.8;
-  const lowScr=k=>(k in screen)&&screen[k]<=SCREEN_LIMIT;
   const streak=streakOf(active);
   const best=Math.max(bestStreak(active),streak);
   const isBest=streak>0&&streak>=best;
   const next=MEDALS.find(m=>m.n>streak);
-  const chips=[["droplet","#378ADD","Water",streakOf(waterG)],["footprints","#1D9E75","Steps",streakOf(stepsG)],["checkCircle","#7F77DD","Tasks",streakOf(tasksG)],["phone","#B07FE0","Low screen",streakOf(lowScr)]];
   return `<div class="streak-card">
     <div class="streak-top">
       <div class="streak-flame">${ic('flame',40,'#ff8a2b')}</div>
@@ -649,9 +639,6 @@ function streakHTML(){
         <div class="streak-num">${streak}<span class="streak-unit">day${streak===1?"":"s"}</span></div>
         <div class="streak-lbl">${streak===0?"Log anything today to start a streak":isBest?`${ic('star',13,'#E8C23B')} Personal best — keep it alive!`:`Best: ${best} days`}</div>
       </div>
-    </div>
-    <div class="streak-chips">
-      ${chips.map(([e,c,n,v])=>`<div class="streak-chip"><span>${ic(e,17,c)}</span><b>${v}</b><i>${n}</i></div>`).join("")}
     </div>
     <div class="medal-row">
       ${MEDALS.map(m=>{const earned=best>=m.n;return `<div class="medal${earned?"":" locked"}" title="${m.name} (${m.n} days)"><div class="medal-ico">${earned?ic(m.icon,26,m.color):ic('lock',22)}</div><div class="medal-n">${m.n}d</div></div>`;}).join("")}
@@ -729,14 +716,17 @@ function dashboardHTML(){
   // Today's rings
   const todayWater=water[today]||0;
   const todaySteps=steps[today]||0;
-  const scheduledMeals=[...new Set(DAYS[todayIdx()].blocks.reduce((a,b)=>a.concat(b.meals||[]),[]))];
-  const loggedToday=getLoggedMeals(today).filter(m=>scheduledMeals.includes(m));
-  const mealPct=scheduledMeals.length?Math.round((loggedToday.length/scheduledMeals.length)*100):0;
+  const tStat=getDayStats(DAYS[todayIdx()].name,DAYS[todayIdx()].blocks);
+  const taskPct=tStat.total?Math.round(tStat.done/tStat.total*100):0;
+  const meals3=["Breakfast","Lunch","Dinner"];
+  const logged3=getLoggedMeals(today).filter(m=>meals3.includes(m));
+  const mealPct=Math.round(logged3.length/3*100);
 
   const todayRings=[
     {label:"Water",val:`${todayWater}L / 2.5L`,pct:Math.min(100,Math.round(todayWater/2.5*100)),color:"#378ADD",trackColor:"#1a3a5c"},
     {label:"Steps",val:`${(todaySteps).toLocaleString()} / 8,000`,pct:Math.min(100,Math.round(todaySteps/8000*100)),color:"#1D9E75",trackColor:"#0a2e1e"},
-    {label:"Meals logged",val:`${loggedToday.length} / ${scheduledMeals.length}`,pct:mealPct,color:"#D4537E",trackColor:"#3d1020"},
+    {label:"Tasks",val:`${tStat.done} / ${tStat.total}`,pct:taskPct,color:"#7F77DD",trackColor:"#231f4d"},
+    {label:"Meals",val:`${logged3.length} / 3`,pct:mealPct,color:"#D4537E",trackColor:"#3d1020"},
   ];
 
   // Week rings
@@ -871,8 +861,6 @@ function monthHTML(){
     }
   }
 
-  html+=moodGraphHTML(md.days);
-
   const cats=Object.keys(catAgg).sort((a,b)=>(catAgg[b].t?catAgg[b].d/catAgg[b].t:0)-(catAgg[a].t?catAgg[a].d/catAgg[a].t:0));
   if(cats.length){
     html+=`<div class="dash-title">By category</div>`;
@@ -987,9 +975,6 @@ function render(){
   // STATS VIEW
   if(view==="dash"){
     html+=streakHTML();
-    html+=waterHTML();
-    html+=stepsHTML();
-    html+=screenHTML();
     html+=`<div class="stats-tabs">
       <button class="stats-tab${statsTab==="week"?" active":""}" onclick="statsTab='week';render()">This week</button>
       <button class="stats-tab${statsTab==="month"?" active":""}" onclick="statsTab='month';render()">Monthly history</button>
@@ -1002,12 +987,12 @@ function render(){
     html+=waterHTML();
     html+=stepsHTML();
     html+=screenHTML();
+    html+=foodHTML(["Breakfast","Lunch","Dinner"]);
     if(curBlockIdx>=0){
       const b=day.blocks[curBlockIdx];
       const C={Spirit:{color:"#D4537E",bg:"#FBEAF0",tc:"#72243E"},Body:{color:"#5DCAA5",bg:"#E1F5EE",tc:"#085041"},Health:{color:"#D85A30",bg:"#FAECE7",tc:"#712B13"},IBM:{color:"#666",bg:"#F1EFE8",tc:"#333"},Career:{color:"#7F77DD",bg:"#EEEDFE",tc:"#3C3489"},Skills:{color:"#1D9E75",bg:"#E1F5EE",tc:"#085041"},CSCI:{color:"#888780",bg:"#F1EFE8",tc:"#444441"},Content:{color:"#BA7517",bg:"#FAEEDA",tc:"#633806"},Life:{color:"#378ADD",bg:"#E6F1FB",tc:"#0C447C"}};
       const col=C[b.tag]||C.Life;
       const tasks=(state[day.name]||{})[curBlockIdx]||b.tasks.map(()=>false);
-      html+=foodHTML(b.meals);
       html+=`<div class="now-card" style="border-color:${col.color};background:${col.bg}">
         <div class="now-label" style="color:${col.tc}">Do this now · ${fmtH(b.st)}–${fmtH(b.en)}</div>
         <div class="now-name" style="color:${col.tc}">${b.name}</div>
@@ -1027,7 +1012,6 @@ function render(){
       html+=`<div style="background:var(--bg2);border-radius:12px;padding:20px;text-align:center;color:var(--sub);font-size:14px;border:0.5px solid var(--border)">No scheduled block right now.<br><span style="font-size:12px">Check the Day view for your full schedule.</span></div>`;
     }
     html+=todoCardHTML();
-    html+=journalHTML();
     html+=`<button class="rescue-toggle" onclick="showRescue=!showRescue;render()">${ic('lifebuoy',15)} Overwhelmed? Open rescue mode</button>`;
     if(showRescue){
       const rescues=[["Ground first","5 breaths + water. Nothing else yet."],["Tiniest job task","Open resume. Change one word. Done."],["Eat something","Doesn't have to be perfect. Just eat."],["Move","Stand up. Walk around. 2 minutes."],["Text Tirth","One kind thing. That's all."],["Reset screen","Close everything. One tab only."]];
@@ -1068,6 +1052,12 @@ function render(){
     });
   }
 
+  // JOURNAL VIEW
+  if(view==="journal"){
+    html+=journalHTML();
+    html+=moodGraphHTML(monthData(0).days);
+  }
+
   // MONTH VIEW (calendar planner + week glance)
   if(view==="month"){
     html+=weekPlanHTML();
@@ -1081,6 +1071,7 @@ function render(){
     <div class="tab-bar">
       <button class="tab-btn${view==="now"?" active":""}" onclick="view='now';render()">${ic('play',20)}Now</button>
       <button class="tab-btn${view==="day"?" active":""}" onclick="view='day';render()">${ic('list',20)}Day</button>
+      <button class="tab-btn${view==="journal"?" active":""}" onclick="view='journal';render()">${ic('notebook',20)}Journal</button>
       <button class="tab-btn${view==="month"?" active":""}" onclick="view='month';render()">${ic('calendar',20)}Month</button>
       <button class="tab-btn${view==="dash"?" active":""}" onclick="view='dash';render()">${ic('chart',20)}Stats</button>
     </div>
