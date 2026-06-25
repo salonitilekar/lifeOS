@@ -6,13 +6,19 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Life OS"/>
-<meta name="theme-color" content="#0f0f0f"/>
+<meta name="theme-color" content="#09090b"/>
 <title>Life OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-  :root{--bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;--border:#2e2e2e;--text:#f0f0f0;--sub:#888;--radius:12px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  :root{--bg:#09090b;--bg2:#18181b;--bg3:#27272a;--border:#27272a;--text:#fafafa;--sub:#a1a1aa;--radius:10px;--font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh;padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased;letter-spacing:-0.01em}
   button{font-family:var(--font);cursor:pointer}
+  .ic{display:inline-block;vertical-align:-0.15em;flex-shrink:0}
+  .water-title,.steps-title,.food-title,.journal-title{display:inline-flex;align-items:center;gap:7px}
+  .view-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
   .header{position:sticky;top:0;background:var(--bg);z-index:50;padding:12px 16px 0;border-bottom:0.5px solid var(--border);padding-top:max(12px,env(safe-area-inset-top))}
   .header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .app-title{font-size:18px;font-weight:600;color:var(--text)}
@@ -40,7 +46,7 @@
   .timer-display{font-size:44px;font-weight:600;font-variant-numeric:tabular-nums}
   .timer-bar{height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-top:10px}
   .timer-fill{height:4px;border-radius:100px;transition:width 1s linear}
-  .timer-note{font-size:12px;color:var(--sub);margin-top:8px}
+  .timer-note{font-size:12px;color:var(--sub);margin-top:8px;display:inline-flex;align-items:center;gap:6px}
   .now-card{border-radius:14px;padding:18px;margin-bottom:12px;border:1.5px solid}
   .now-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-bottom:6px}
   .now-name{font-size:22px;font-weight:600;margin-bottom:6px}
@@ -50,7 +56,7 @@
   .chk{width:18px;height:18px;border-radius:5px;border:1.5px solid;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:all .15s}
   .task-text{font-size:14px;line-height:1.5}
   .task-text.done{text-decoration:line-through;opacity:.4}
-  .start-timer-btn{margin-top:14px;font-size:13px;padding:9px 18px;border-radius:10px;border:none;color:#fff;font-weight:500}
+  .start-timer-btn{margin-top:14px;font-size:13px;padding:9px 18px;border-radius:10px;border:none;color:#fff;font-weight:500;display:inline-flex;align-items:center;gap:6px}
   .next-block{background:var(--bg2);border-radius:10px;padding:12px 14px;border:0.5px solid var(--border);margin-bottom:12px}
   .next-label{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
   .next-name{font-size:14px;font-weight:500}
@@ -62,13 +68,13 @@
   .block-name{flex:1;font-size:14px;font-weight:500}
   .tag-pill{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:500;flex-shrink:0}
   .block-prog{font-size:11px;color:var(--sub);margin-left:2px}
-  .chevron{font-size:14px;color:var(--sub);transition:transform .2s;flex-shrink:0}
+  .chevron{color:var(--sub);transition:transform .2s;flex-shrink:0;display:inline-flex;align-items:center;line-height:0}
   .chevron.open{transform:rotate(180deg)}
   .block-body{border-top:0.5px solid var(--border);padding:10px 14px 14px;display:none}
   .block-body.open{display:block}
   .block-note{font-size:12px;color:var(--sub);margin-top:10px;padding:8px 10px;background:var(--bg3);border-radius:8px;line-height:1.6;font-style:italic}
   .fixed-badge{font-size:10px;color:var(--sub);padding:2px 6px;border-radius:4px;background:var(--bg3);margin-left:6px;font-weight:400}
-  .mini-timer-btn{margin-top:10px;font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text)}
+  .mini-timer-btn{margin-top:10px;font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);display:inline-flex;align-items:center;gap:6px}
   .week-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:8px;cursor:pointer}
   .week-row.today{border-color:#7F77DD}
   .week-day{font-size:13px;font-weight:500;width:32px;flex-shrink:0}
@@ -77,7 +83,7 @@
   .week-bar{height:3px;background:var(--bg3);border-radius:100px;overflow:hidden}
   .week-fill{height:3px;border-radius:100px}
   .week-count{font-size:12px;color:var(--sub);flex-shrink:0}
-  .rescue-toggle{width:100%;margin-top:14px;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--sub);font-size:13px}
+  .rescue-toggle{width:100%;margin-top:14px;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--sub);font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px}
   .rescue-panel{margin-top:10px;background:var(--bg2);border-radius:var(--radius);padding:14px}
   .rescue-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:10px}
   .rescue-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -88,7 +94,7 @@
   .install-banner{margin:0 16px 12px;background:var(--bg2);border-radius:var(--radius);padding:12px 14px;border:1px solid #7F77DD44;display:flex;align-items:center;gap:10px}
   .install-text{flex:1;font-size:12px;color:var(--sub);line-height:1.5}
   .install-text b{color:var(--text)}
-  .install-close{font-size:16px;color:var(--sub);background:none;border:none;padding:4px}
+  .install-close{color:var(--sub);background:none;border:none;padding:4px;display:inline-flex;align-items:center;line-height:0}
 
   /* Water tracker */
   .water-section{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:12px}
@@ -113,7 +119,8 @@
   .food-btn{padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-weight:500;text-align:center;cursor:pointer;text-decoration:none;display:block;line-height:1.4}
   .food-btn:active{opacity:.7}
   .food-btn.logged{border-color:#1D9E75;color:#1D9E75;background:rgba(29,158,117,0.08)}
-  .food-btn span{display:block;font-size:18px;margin-bottom:4px}
+  .food-btn span{display:flex;justify-content:center;margin-bottom:5px;color:var(--sub)}
+  .food-btn.logged span{color:inherit}
 
   /* Steps */
   .steps-section{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:12px}
@@ -181,23 +188,23 @@
   .screen-section{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:12px}
   .pomo-wrap{display:flex;flex-direction:column;gap:5px;margin-top:14px}
   .pomo-wrap .start-timer-btn,.pomo-wrap .mini-timer-btn{margin-top:0}
-  .pomo-tag{font-size:11px;font-weight:500;opacity:.85}
+  .pomo-tag{font-size:11px;font-weight:500;opacity:.85;display:inline-flex;align-items:center;gap:5px}
 
   /* Streak + medals */
   .streak-card{background:linear-gradient(135deg,rgba(255,140,40,.14),rgba(127,119,221,.14)),var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
   .streak-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-  .streak-flame{font-size:42px;line-height:1;filter:drop-shadow(0 0 10px rgba(255,140,40,.5))}
+  .streak-flame{line-height:0;display:flex;filter:drop-shadow(0 0 10px rgba(255,140,40,.5))}
   .streak-num{font-size:36px;font-weight:700;line-height:1;color:var(--text)}
   .streak-unit{font-size:14px;font-weight:500;color:var(--sub);margin-left:6px}
   .streak-lbl{font-size:12px;color:var(--sub);margin-top:5px}
   .streak-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
   .streak-chip{background:var(--bg3);border-radius:12px;padding:9px 4px;text-align:center}
-  .streak-chip span{font-size:15px;display:block}
+  .streak-chip span{display:flex;justify-content:center;margin-bottom:3px}
   .streak-chip b{font-size:17px;font-weight:700;display:block;margin-top:2px;color:var(--text)}
   .streak-chip i{font-size:9px;color:var(--sub);font-style:normal;display:block;margin-top:1px}
   .medal-row{display:flex;justify-content:space-between;gap:4px;margin-bottom:12px}
   .medal{flex:1;text-align:center}
-  .medal-ico{font-size:25px;line-height:1.2}
+  .medal-ico{line-height:0;display:flex;justify-content:center;margin-bottom:4px}
   .medal-n{font-size:9px;color:var(--sub)}
   .medal.locked .medal-ico{filter:grayscale(1);opacity:.35}
   .medal-next-track{height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-bottom:6px}
@@ -215,13 +222,13 @@
   .mood-btn.sel{opacity:1;transform:translateY(-2px);box-shadow:0 0 0 2.5px var(--text)}
   .journal-text{width:100%;min-height:90px;resize:vertical;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;padding:12px;margin-bottom:10px}
   .journal-save{padding:10px 18px;border-radius:10px;border:none;background:var(--text);color:var(--bg);font-size:13px;font-weight:600}
-  .journal-saved{font-size:12px;color:var(--sub);margin-left:10px}
+  .journal-saved{font-size:12px;color:var(--sub);margin-left:10px;display:inline-flex;align-items:center;gap:4px}
   .mood-graph-card{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:20px;border:0.5px solid var(--border)}
   .mood-graph-scroll{overflow-x:auto;scrollbar-width:none}
   .mood-graph-scroll::-webkit-scrollbar{display:none}
 
   @media(prefers-color-scheme:light){
-    :root{--bg:#f5f5f5;--bg2:#fff;--bg3:#ebebeb;--border:#ddd;--text:#111;--sub:#777}
+    :root{--bg:#fafafa;--bg2:#ffffff;--bg3:#f4f4f5;--border:#e4e4e7;--text:#09090b;--sub:#71717a}
   }
 </style>
 </head>
@@ -258,7 +265,7 @@ const B={
   move_reheat:{st:t(18,30),en:t(19,30),name:"Move + reheat dinner", tag:"Health", fixed:false,meals:["Dinner"],tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Reheat Saturday's batch cook — track macros"],note:"Movement resets ADHD focus for the evening. Even a 20 min walk counts."},
   move_cook: {st:t(18,30),en:t(19,30), name:"Move + get ready to cook",tag:"Health",fixed:false,meals:[],tasks:["Home workout 30 min (YouTube) OR walk 3,000–4,000 steps","Shower if you worked out","Change into comfy clothes — cooking mode on"],note:"Movement first, then cooking as your decompression. This is the good part of the day."},
   cook_tue:  {st:t(21),   en:t(22),     name:"Cook a proper meal",   tag:"Health", fixed:false,meals:["Dinner"],tasks:["This batch: Lunch ×3 (Wed, Thu, Fri) · Dinner ×3 (Tue, Wed, Thu) — 6 containers total","Portion and label all 6 before putting away","Pull up a saved IG reel or a recipe you've been wanting to try","Track macros while you eat"],note:"Tuesday cook is your biggest cook of the week — 6 meals from one session. Make enough."},
-  order_in:  {st:t(19,30),en:t(20,30), name:"Order in 🍕",          tag:"Health", fixed:false,meals:["Dinner"],tasks:["You earned this — order whatever you want","No tracking tonight if you don't want to","Eat and enjoy — this is your end-of-week treat"],note:"Friday order-in is built into the plan. Zero guilt."},
+  order_in:  {st:t(19,30),en:t(20,30), name:"Order in",             tag:"Health", fixed:false,meals:["Dinner"],tasks:["You earned this — order whatever you want","No tracking tonight if you don't want to","Eat and enjoy — this is your end-of-week treat"],note:"Friday order-in is built into the plan. Zero guilt."},
   apps_big:  {st:t(19,30),en:t(22),    name:"Job applications",     tag:"Career", fixed:false,meals:[],tasks:["20–30 targeted applications — H1B-sponsoring companies first","Reach out to 3–5 referral contacts","Research 3 new sponsoring companies, add to master list","Update application tracker"],note:"2.5 hours = your highest-volume application session. Timer on, one tab."},
   apps_med:  {st:t(21,30),en:t(22),    name:"Job apps — daily streak",tag:"Career",fixed:false,meals:[],tasks:["10–15 applications — keep the streak alive","Use saved company list — no starting from scratch","One LinkedIn recruiter DM"],note:"Even 10 on a tired night keeps momentum."},
   dsa:       {st:t(19,30),en:t(21),    name:"DSA practice",         tag:"Career", fixed:false,meals:[],tasks:["2–3 LeetCode problems (easy → medium progression)","Understand the pattern — not just the solution","Note the pattern name for review later"],note:"2 focused hours > 4 distracted hours. Timer on, phone elsewhere."},
@@ -302,7 +309,7 @@ const DAYS=[
   {name:"Tuesday",  short:"Tue",theme:"DSA + big cook night",  tc:"#888780",tb:"#F1EFE8",intent:"DSA first, then Tuesday's big cook — this batch feeds you Wed, Thu, and Fri lunch. Make enough.", blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_cook,B.dsa,B.cook_tue,TUE_CSCI,B.wind]},
   {name:"Wednesday",short:"Wed",theme:"CSCI + upskill night",  tc:"#888780",tb:"#F1EFE8",intent:"Reheating Tuesday's cook tonight. CSCI full session, then upskill.",                               blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_reheat,B.csci_long,B.upskill,WED_APPS,B.wind]},
   {name:"Thursday", short:"Thu",theme:"Job apps + CSCI night", tc:"#7F77DD",tb:"#EEEDFE",intent:"Applications first, then CSCI touch. Reheating Tuesday's cook — lunch and dinner both covered.",   blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,B.move_reheat,THU_APPS,B.csci_touch,B.tirth_long,B.wind]},
-  {name:"Friday",   short:"Fri",theme:"Content + order in 🍕", tc:"#BA7517",tb:"#FAEEDA",intent:"Order in first, then content tonight — built into the plan, zero guilt.",                            blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,FRI_D,B.order_in,B.content,B.apps_med,FRI_F,B.wind]},
+  {name:"Friday",   short:"Fri",theme:"Content + order in",    tc:"#BA7517",tb:"#FAEEDA",intent:"Order in first, then content tonight — built into the plan, zero guilt.",                            blocks:[B.wake,B.ritual,B.hygiene,B.bfast,B.precsci,B.leave,B.commute_to,B.ibm,B.commute_home,B.change,FRI_D,B.order_in,B.content,B.apps_med,FRI_F,B.wind]},
   {name:"Saturday", short:"Sat",theme:"Deep work + groceries", tc:"#7F77DD",tb:"#EEEDFE",intent:"No IBM. Jobs, CSCI, grocery run, big batch cook for Sun+Mon+Tue. Then the evening is yours.",       blocks:[SW,SB,SJ,SG,SLunch,SC,SP,SW2,SM,SLI,B.wind]},
   {name:"Sunday",   short:"Sun",theme:"Reset day",             tc:"#D4537E",tb:"#FBEAF0",intent:"Not catch-up — reset. CSCI, planning, light prep, and early rest so Monday-you starts strong.",     blocks:[UW,UC,UL,UR,UA,URest,UM,UE,UWind]},
 ];
@@ -318,6 +325,35 @@ const MOODS=[
   {id:"shaanti",label:"Shaanti",en:"Peace",   color:"#F2F2F2", text:"#333",     pt:1},
 ];
 function moodById(id){return MOODS.find(m=>m.id===id);}
+// ---- Lucide icons (inline SVG, currentColor) ----
+const ICONS={
+  play:'<polygon points="6 3 20 12 6 21 6 3"/>',
+  list:'<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>',
+  calendar:'<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+  chart:'<path d="M3 3v18h18"/><rect x="7" y="9" width="3" height="8" rx="1"/><rect x="12" y="5" width="3" height="12" rx="1"/><rect x="17" y="13" width="3" height="4" rx="1"/>',
+  droplet:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  footprints:'<path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/>',
+  phone:'<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>',
+  camera:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  sunrise:'<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  checkCircle:'<path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/>',
+  notebook:'<path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>',
+  lifebuoy:'<circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/>',
+  timer:'<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="12" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+  medal:'<path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/>',
+  trophy:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  gem:'<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+  crown:'<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.97.736H5.426a1 1 0 0 1-.97-.736L1.62 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  chevron:'<path d="m6 9 6 6 6-6"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+};
+function ic(name,size=16,color){return `<svg class="ic" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="${color||"currentColor"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||""}</svg>`;}
 function todayKey(){const n=new Date();return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`;}
 function dateKey(d){return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
 function weekIdToDate(w){const p=w.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
@@ -456,7 +492,7 @@ function waterHTML(){
   const fillPct=curIdx<0?0:(curIdx/(WATER_LEVELS.length-1)*100);
   return `<div class="water-section">
     <div class="water-header">
-      <div><div class="water-title">💧 Water intake</div><div class="water-goal-txt">Goal: 2.5 L / day</div></div>
+      <div><div class="water-title">${ic('droplet',15,'#378ADD')} Water intake</div><div class="water-goal-txt">Goal: 2.5 L / day</div></div>
       <div style="text-align:right"><div class="water-val">${waterLevel}L</div><div class="water-goal-txt">${pct}% of goal</div></div>
     </div>
     <div style="position:relative;padding:8px 0">
@@ -476,7 +512,7 @@ function stepsHTML(){
   const pct=Math.min(100,Math.round((stepsVal/STEPS_GOAL)*100));
   return `<div class="steps-section">
     <div class="steps-header">
-      <div><div class="steps-title">👟 Steps today</div><div style="font-size:11px;color:var(--sub)">Goal: 8,000 steps</div></div>
+      <div><div class="steps-title">${ic('footprints',15,'#1D9E75')} Steps today</div><div style="font-size:11px;color:var(--sub)">Goal: 8,000 steps</div></div>
       <div style="text-align:right"><div class="steps-val">${stepsVal.toLocaleString()}</div><div style="font-size:11px;color:var(--sub)">${pct}% of goal</div></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -494,8 +530,8 @@ function screenHTML(){
   const hrs=screenVal>=60?`${Math.floor(screenVal/60)}h ${screenVal%60}m`:`${screenVal}m`;
   return `<div class="screen-section">
     <div class="steps-header">
-      <div><div class="steps-title">📵 Doomscroll time</div><div style="font-size:11px;color:var(--sub)">Stay under ${SCREEN_LIMIT} min</div></div>
-      <div style="text-align:right"><div class="steps-val" style="color:${col}">${hrs}</div><div style="font-size:11px;color:var(--sub)">${over?`${screenVal-SCREEN_LIMIT}m over 😬`:`${SCREEN_LIMIT-screenVal}m to spare`}</div></div>
+      <div><div class="steps-title">${ic('phone',15,'#B07FE0')} Doomscroll time</div><div style="font-size:11px;color:var(--sub)">Stay under ${SCREEN_LIMIT} min</div></div>
+      <div style="text-align:right"><div class="steps-val" style="color:${col}">${hrs}</div><div style="font-size:11px;color:var(--sub)">${over?`${screenVal-SCREEN_LIMIT}m over`:`${SCREEN_LIMIT-screenVal}m to spare`}</div></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <input class="steps-input" type="number" placeholder="Minutes doomscrolled..." value="${screenInput}" onchange="screenInput=this.value" oninput="screenInput=this.value" onkeydown="if(event.key==='Enter')saveScreenInput()"/>
@@ -516,7 +552,7 @@ function bestStreak(qualify,lookback=400){
   for(let i=0;i<lookback;i++){if(qualify(dateKey(d))){cur++;if(cur>best)best=cur;}else cur=0;d.setDate(d.getDate()-1);}
   return best;
 }
-const MEDALS=[{n:3,ico:"🥉",name:"Getting started"},{n:7,ico:"🥈",name:"One week"},{n:14,ico:"🥇",name:"Two weeks"},{n:30,ico:"🏆",name:"One month"},{n:60,ico:"💎",name:"Two months"},{n:100,ico:"👑",name:"Century"}];
+const MEDALS=[{n:3,icon:"medal",color:"#CD7F32",name:"Getting started"},{n:7,icon:"medal",color:"#B8B8C2",name:"One week"},{n:14,icon:"medal",color:"#E8C23B",name:"Two weeks"},{n:30,icon:"trophy",color:"#E8C23B",name:"One month"},{n:60,icon:"gem",color:"#5CC8E8",name:"Two months"},{n:100,icon:"crown",color:"#C9A24B",name:"Century"}];
 function streakHTML(){
   const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll();
   const active=k=>((water[k]||0)>0)||((steps[k]||0)>0)||((meals[k]||[]).length>0)||(k in screen)||(arch[k]&&arch[k].done>0);
@@ -528,22 +564,22 @@ function streakHTML(){
   const best=Math.max(bestStreak(active),streak);
   const isBest=streak>0&&streak>=best;
   const next=MEDALS.find(m=>m.n>streak);
-  const chips=[["💧","Water",streakOf(waterG)],["👟","Steps",streakOf(stepsG)],["✅","Tasks",streakOf(tasksG)],["📵","Low screen",streakOf(lowScr)]];
+  const chips=[["droplet","#378ADD","Water",streakOf(waterG)],["footprints","#1D9E75","Steps",streakOf(stepsG)],["checkCircle","#7F77DD","Tasks",streakOf(tasksG)],["phone","#B07FE0","Low screen",streakOf(lowScr)]];
   return `<div class="streak-card">
     <div class="streak-top">
-      <div class="streak-flame">🔥</div>
+      <div class="streak-flame">${ic('flame',40,'#ff8a2b')}</div>
       <div>
         <div class="streak-num">${streak}<span class="streak-unit">day${streak===1?"":"s"}</span></div>
-        <div class="streak-lbl">${streak===0?"Log anything today to start a streak":isBest?"🌟 Personal best — keep it alive!":`Best: ${best} days`}</div>
+        <div class="streak-lbl">${streak===0?"Log anything today to start a streak":isBest?`${ic('star',13,'#E8C23B')} Personal best — keep it alive!`:`Best: ${best} days`}</div>
       </div>
     </div>
     <div class="streak-chips">
-      ${chips.map(([e,n,v])=>`<div class="streak-chip"><span>${e}</span><b>${v}</b><i>${n}</i></div>`).join("")}
+      ${chips.map(([e,c,n,v])=>`<div class="streak-chip"><span>${ic(e,17,c)}</span><b>${v}</b><i>${n}</i></div>`).join("")}
     </div>
     <div class="medal-row">
-      ${MEDALS.map(m=>{const earned=best>=m.n;return `<div class="medal${earned?"":" locked"}" title="${m.name} (${m.n} days)"><div class="medal-ico">${earned?m.ico:"🔒"}</div><div class="medal-n">${m.n}d</div></div>`;}).join("")}
+      ${MEDALS.map(m=>{const earned=best>=m.n;return `<div class="medal${earned?"":" locked"}" title="${m.name} (${m.n} days)"><div class="medal-ico">${earned?ic(m.icon,26,m.color):ic('lock',22)}</div><div class="medal-n">${m.n}d</div></div>`;}).join("")}
     </div>
-    ${next?`<div class="medal-next"><div class="medal-next-track"><div class="medal-next-fill" style="width:${Math.round(streak/next.n*100)}%"></div></div><div class="medal-next-lbl">${next.n-streak} day${next.n-streak===1?"":"s"} to ${next.ico} ${next.name}</div></div>`:`<div class="medal-next-lbl" style="text-align:center">👑 You've earned every medal. Legend.</div>`}
+    ${next?`<div class="medal-next"><div class="medal-next-track"><div class="medal-next-fill" style="width:${Math.round(streak/next.n*100)}%"></div></div><div class="medal-next-lbl">${next.n-streak} day${next.n-streak===1?"":"s"} to ${ic(next.icon,14,next.color)} ${next.name}</div></div>`:`<div class="medal-next-lbl" style="text-align:center">${ic('crown',14,'#C9A24B')} You've earned every medal. Legend.</div>`}
   </div>`;
 }
 
@@ -551,14 +587,14 @@ function journalHTML(){
   const saved=getJournal(todayKey());
   const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   return `<div class="journal-card">
-    <div class="journal-title">📔 Today's journal</div>
+    <div class="journal-title">${ic('notebook',16)} Today's journal</div>
     <div class="journal-q">How did you do today? Pick the shade of your day (raag).</div>
     <div class="mood-row">
       ${MOODS.map(m=>`<button class="mood-btn${journalMood===m.id?" sel":""}" style="background:${m.color};color:${m.text}" onclick="setMood('${m.id}')"><b>${m.label}</b><span>${m.en}</span></button>`).join("")}
     </div>
     <textarea class="journal-text" placeholder="Write about your day — what happened, what you felt..." oninput="journalText=this.value">${esc(journalText)}</textarea>
     <button class="journal-save" onclick="saveJournalEntry()">${saved?"Update entry":"Save entry"}</button>
-    ${saved&&saved.ts?`<span class="journal-saved">Saved ✓</span>`:""}
+    ${saved&&saved.ts?`<span class="journal-saved">${ic('check',13)} Saved</span>`:""}
   </div>`;
 }
 
@@ -587,9 +623,9 @@ function foodHTML(meals){
   if(!meals||meals.length===0)return "";
   const logged=getLoggedMeals(todayKey());
   return `<div class="food-section">
-    <div class="food-title">📸 Log your meal</div>
+    <div class="food-title">${ic('camera',16)} Log your meal</div>
     <div class="food-btns">
-      ${meals.map(m=>{const done=logged.includes(m);return `<a class="food-btn${done?" logged":""}" href="${FORM_BASE}${encodeURIComponent(m)}" target="_blank" onclick="logMeal('${m}')"><span>${done?"✅":(m==="Breakfast"?"🌅":m==="Lunch"?"☀️":"🌙")}</span>${m}${done?" ✓":""}</a>`;}).join("")}
+      ${meals.map(m=>{const done=logged.includes(m);const mi=m==="Breakfast"?"sunrise":m==="Lunch"?"sun":"moon";return `<a class="food-btn${done?" logged":""}" href="${FORM_BASE}${encodeURIComponent(m)}" target="_blank" onclick="logMeal('${m}')"><span>${done?ic('check',17):ic(mi,17)}</span>${m}</a>`;}).join("")}
     </div>
   </div>`;
 }
@@ -792,15 +828,15 @@ function render(){
     <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
     <div class="day-nav">${DAYS.map((d,i)=>`<button class="day-btn${i===tIdx?" today":""}${i===activeDayIdx?" active":""}" onclick="activeDayIdx=${i};view='day';render()">${d.short}</button>`).join("")}</div>
     <div class="view-toggle">
-      <button class="view-btn${view==="now"?" active":""}" onclick="view='now';render()">▶ Now</button>
-      <button class="view-btn${view==="day"?" active":""}" onclick="view='day';render()">📋 Day</button>
-      <button class="view-btn${view==="week"?" active":""}" onclick="view='week';render()">📅 Week</button>
-      <button class="view-btn${view==="dash"?" active":""}" onclick="view='dash';render()">📊 Stats</button>
+      <button class="view-btn${view==="now"?" active":""}" onclick="view='now';render()">${ic('play',15)} Now</button>
+      <button class="view-btn${view==="day"?" active":""}" onclick="view='day';render()">${ic('list',15)} Day</button>
+      <button class="view-btn${view==="week"?" active":""}" onclick="view='week';render()">${ic('calendar',15)} Week</button>
+      <button class="view-btn${view==="dash"?" active":""}" onclick="view='dash';render()">${ic('chart',15)} Stats</button>
     </div>
   </div>`;
 
   if(showInstall){
-    html+=`<div class="install-banner"><div class="install-text"><b>Add to Home Screen</b> — tap Share in Safari → "Add to Home Screen"</div><button class="install-close" onclick="showInstall=false;localStorage.setItem('install_dismissed','1');this.closest('.install-banner').remove()">✕</button></div>`;
+    html+=`<div class="install-banner"><div class="install-text"><b>Add to Home Screen</b> — tap Share in Safari → "Add to Home Screen"</div><button class="install-close" onclick="showInstall=false;localStorage.setItem('install_dismissed','1');this.closest('.install-banner').remove()">${ic('x',16)}</button></div>`;
   }
 
   html+=`<div class="content">`;
@@ -808,7 +844,7 @@ function render(){
     <div class="timer-top"><div class="timer-label">${timerLabel}</div><div class="timer-controls"><button class="timer-btn pause-btn" onclick="pauseTimer()">${timerRunning?"Pause":"Resume"}</button><button class="timer-btn" onclick="stopTimer()">Stop</button></div></div>
     <div class="timer-display">${Math.floor(timerSec/60)}:${String(timerSec%60).padStart(2,"0")}</div>
     <div class="timer-bar"><div class="timer-fill" style="width:${timerSec/timerTotal*100}%;background:${timerColor}"></div></div>
-    <div class="timer-note">🍅 Pomodoro for ADHD · Phone down. You're already doing it.</div>
+    <div class="timer-note">${ic('timer',14)} Pomodoro for ADHD · Phone down. You're already doing it.</div>
   </div>`;
 
   // STATS VIEW
@@ -840,10 +876,10 @@ function render(){
         <div class="now-name" style="color:${col.tc}">${b.name}</div>
         ${b.note?`<div class="now-note" style="color:${col.tc}">${b.note}</div>`:""}
         ${b.tasks.map((t,ti)=>`<div class="task-row" onclick="toggle('${day.name}',${curBlockIdx},${ti})" style="background:rgba(0,0,0,0.06)">
-          <div class="chk" style="border-color:${tasks[ti]?col.color:col.tc};background:${tasks[ti]?col.color:"transparent"}">${tasks[ti]?"✓":""}</div>
+          <div class="chk" style="border-color:${tasks[ti]?col.color:col.tc};background:${tasks[ti]?col.color:"transparent"}">${tasks[ti]?ic('check',13):""}</div>
           <div class="task-text${tasks[ti]?" done":""}" style="color:${col.tc}">${t}</div>
         </div>`).join("")}
-        ${!b.fixed?`<div class="pomo-wrap"><button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">▶ Start 25-min timer</button><span class="pomo-tag" style="color:${col.tc}">🍅 Pomodoro for ADHD — one short sprint at a time</span></div>`:""}
+        ${!b.fixed?`<div class="pomo-wrap"><button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">${ic('play',14)} Start 25-min timer</button><span class="pomo-tag" style="color:${col.tc}">${ic('timer',12)} Pomodoro for ADHD — one short sprint at a time</span></div>`:""}
       </div>`;
       if(curBlockIdx<day.blocks.length-1){
         const nb=day.blocks[curBlockIdx+1];
@@ -854,7 +890,7 @@ function render(){
       html+=`<div style="background:var(--bg2);border-radius:12px;padding:20px;text-align:center;color:var(--sub);font-size:14px;border:0.5px solid var(--border)">No scheduled block right now.<br><span style="font-size:12px">Check the Day view for your full schedule.</span></div>`;
     }
     html+=journalHTML();
-    html+=`<button class="rescue-toggle" onclick="showRescue=!showRescue;render()">😵 Overwhelmed? Open rescue mode</button>`;
+    html+=`<button class="rescue-toggle" onclick="showRescue=!showRescue;render()">${ic('lifebuoy',15)} Overwhelmed? Open rescue mode</button>`;
     if(showRescue){
       const rescues=[["Ground first","5 breaths + water. Nothing else yet."],["Tiniest job task","Open resume. Change one word. Done."],["Eat something","Doesn't have to be perfect. Just eat."],["Move","Stand up. Walk around. 2 minutes."],["Text Tirth","One kind thing. That's all."],["Reset screen","Close everything. One tab only."]];
       html+=`<div class="rescue-panel"><div class="rescue-title">Pick just one tiny thing</div><div class="rescue-grid">${rescues.map(([t,s])=>`<div class="rescue-item" onclick="showRescue=false;render()"><b>${t}</b><span>${s}</span></div>`).join("")}</div></div>`;
@@ -879,16 +915,16 @@ function render(){
           <div class="block-name" style="color:${isCurrent?col.color:"var(--text)"}">${b.name}${b.fixed?`<span class="fixed-badge">fixed</span>`:""}</div>
           <span class="tag-pill" style="background:${col.bg};color:${col.tc}">${b.tag}</span>
           ${done>0?`<span class="block-prog">${done}/${b.tasks.length}</span>`:""}
-          <span class="chevron${isOpen?" open":""}">⌄</span>
+          <span class="chevron${isOpen?" open":""}">${ic('chevron',16)}</span>
         </div>
         ${isOpen?`<div class="block-body open">
           ${b.meals&&b.meals.length?foodHTML(b.meals):""}
           ${b.tasks.map((t,ti)=>`<div class="task-row" onclick="toggle('${day.name}',${bi},${ti})">
-            <div class="chk" style="border-color:${tasks[ti]?"#7F77DD":"var(--border)"};background:${tasks[ti]?"#7F77DD":"transparent"}">${tasks[ti]?"✓":""}</div>
+            <div class="chk" style="border-color:${tasks[ti]?"#7F77DD":"var(--border)"};background:${tasks[ti]?"#7F77DD":"transparent"}">${tasks[ti]?ic('check',13):""}</div>
             <div class="task-text${tasks[ti]?" done":""}">${t}</div>
           </div>`).join("")}
           ${b.note?`<div class="block-note">${b.note}</div>`:""}
-          ${!b.fixed?`<div class="pomo-wrap"><button class="mini-timer-btn" onclick="startTimer('${b.name}','${col.color}')">▶ 25-min timer</button><span class="pomo-tag">🍅 Pomodoro for ADHD</span></div>`:""}
+          ${!b.fixed?`<div class="pomo-wrap"><button class="mini-timer-btn" onclick="startTimer('${b.name}','${col.color}')">${ic('play',13)} 25-min timer</button><span class="pomo-tag">${ic('timer',12)} Pomodoro for ADHD</span></div>`:""}
         </div>`:""}
       </div>`;
     });
