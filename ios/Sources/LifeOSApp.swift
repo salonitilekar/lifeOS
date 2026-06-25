@@ -28,8 +28,8 @@ struct WebView: UIViewRepresentable {
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.bounces = true
         webView.isOpaque = false
-        // Match page background (#000000) so safe-area edges look seamless.
-        let bg = UIColor.black
+        // Match page background (#0f0f0f) so safe-area edges look seamless.
+        let bg = UIColor(red: 15/255, green: 15/255, blue: 15/255, alpha: 1)
         webView.backgroundColor = bg
         webView.scrollView.backgroundColor = bg
 
