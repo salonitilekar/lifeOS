@@ -177,6 +177,33 @@
   .day-detail{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:20px;border:0.5px solid var(--border)}
   .day-detail-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)}
 
+  /* Screentime + pomodoro */
+  .screen-section{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+  .pomo-wrap{display:flex;flex-direction:column;gap:5px;margin-top:14px}
+  .pomo-wrap .start-timer-btn,.pomo-wrap .mini-timer-btn{margin-top:0}
+  .pomo-tag{font-size:11px;font-weight:500;opacity:.85}
+
+  /* Streak + medals */
+  .streak-card{background:linear-gradient(135deg,rgba(255,140,40,.14),rgba(127,119,221,.14)),var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+  .streak-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .streak-flame{font-size:42px;line-height:1;filter:drop-shadow(0 0 10px rgba(255,140,40,.5))}
+  .streak-num{font-size:36px;font-weight:700;line-height:1;color:var(--text)}
+  .streak-unit{font-size:14px;font-weight:500;color:var(--sub);margin-left:6px}
+  .streak-lbl{font-size:12px;color:var(--sub);margin-top:5px}
+  .streak-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+  .streak-chip{background:var(--bg3);border-radius:12px;padding:9px 4px;text-align:center}
+  .streak-chip span{font-size:15px;display:block}
+  .streak-chip b{font-size:17px;font-weight:700;display:block;margin-top:2px;color:var(--text)}
+  .streak-chip i{font-size:9px;color:var(--sub);font-style:normal;display:block;margin-top:1px}
+  .medal-row{display:flex;justify-content:space-between;gap:4px;margin-bottom:12px}
+  .medal{flex:1;text-align:center}
+  .medal-ico{font-size:25px;line-height:1.2}
+  .medal-n{font-size:9px;color:var(--sub)}
+  .medal.locked .medal-ico{filter:grayscale(1);opacity:.35}
+  .medal-next-track{height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-bottom:6px}
+  .medal-next-fill{height:6px;background:linear-gradient(90deg,#ff8c28,#ffd23f);border-radius:100px;transition:width .4s}
+  .medal-next-lbl{font-size:11px;color:var(--sub)}
+
   @media(prefers-color-scheme:light){
     :root{--bg:#f5f5f5;--bg2:#fff;--bg3:#ebebeb;--border:#ddd;--text:#111;--sub:#777}
   }
@@ -189,6 +216,7 @@ const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9aw
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
 const STEPS_GOAL=8000;
+const SCREEN_LIMIT=60; // doomscroll minutes/day — staying under is the win
 
 // ---- Supabase sync (fill these in to enable cross-device sync) ----
 const SUPABASE_URL="https://dwuiheikbxkegqwcdymn.supabase.co";
@@ -260,7 +288,7 @@ const DAYS=[
 ];
 
 // Storage
-const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps",MEALS_K="life_os_meals",ARCH_K="life_os_archive";
+const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps",MEALS_K="life_os_meals",ARCH_K="life_os_archive",SCREEN_K="life_os_screen";
 const TAGS={Spirit:"#D4537E",Body:"#5DCAA5",Health:"#D85A30",IBM:"#9a9a9a",Career:"#7F77DD",Skills:"#1D9E75",CSCI:"#888780",Content:"#BA7517",Life:"#378ADD"};
 function todayKey(){const n=new Date();return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`;}
 function dateKey(d){return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
@@ -282,6 +310,9 @@ function loadWater(){try{const r=localStorage.getItem(WATER_K);if(r){const d=JSO
 function saveWater(v){try{const d=JSON.parse(localStorage.getItem(WATER_K)||"{}");d[todayKey()]=v;localStorage.setItem(WATER_K,JSON.stringify(d));pushRemote("water",d);}catch(e){}}
 function loadSteps(){try{const r=localStorage.getItem(STEPS_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
 function saveSteps(v){try{const d=JSON.parse(localStorage.getItem(STEPS_K)||"{}");d[todayKey()]=v;localStorage.setItem(STEPS_K,JSON.stringify(d));pushRemote("steps",d);}catch(e){}}
+function loadScreen(){try{const r=localStorage.getItem(SCREEN_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
+function saveScreen(v){try{const d=JSON.parse(localStorage.getItem(SCREEN_K)||"{}");d[todayKey()]=v;localStorage.setItem(SCREEN_K,JSON.stringify(d));pushRemote("screen",d);}catch(e){}}
+function loadScreenAll(){try{const r=localStorage.getItem(SCREEN_K);if(r)return JSON.parse(r);}catch(e){}return {};}
 function loadMealsLog(){try{const r=localStorage.getItem(MEALS_K);if(r)return JSON.parse(r);}catch(e){}return {};}
 function getLoggedMeals(key){const d=loadMealsLog();return d[key]||[];}
 function logMeal(m){try{const d=loadMealsLog(),k=todayKey(),arr=d[k]||[];if(!arr.includes(m))arr.push(m);d[k]=arr;localStorage.setItem(MEALS_K,JSON.stringify(d));pushRemote("meals",d);}catch(e){}render();}
@@ -320,8 +351,9 @@ async function syncFromRemote(){
     if(map.water)localStorage.setItem(WATER_K,JSON.stringify(map.water));
     if(map.steps)localStorage.setItem(STEPS_K,JSON.stringify(map.steps));
     if(map.meals)localStorage.setItem(MEALS_K,JSON.stringify(map.meals));
+    if(map.screen)localStorage.setItem(SCREEN_K,JSON.stringify(map.screen));
     archiveStateFor(cw,state);
-    waterLevel=loadWater();stepsVal=loadSteps();
+    waterLevel=loadWater();stepsVal=loadSteps();screenVal=loadScreen();
     render();
   }catch(e){}
 }
@@ -340,6 +372,8 @@ let showInstall=!localStorage.getItem("install_dismissed");
 let waterLevel=loadWater();
 let stepsVal=loadSteps();
 let stepsInput=stepsVal||"";
+let screenVal=loadScreen();
+let screenInput=screenVal||"";
 let statsTab="week";
 let monthOffset=0;
 let selMonthKey=null;
@@ -365,6 +399,7 @@ function toggle(dayName,bi,ti){
 }
 function setWater(idx){waterLevel=WATER_LEVELS[idx];saveWater(waterLevel);render();}
 function saveStepsInput(){stepsVal=parseInt(stepsInput)||0;saveSteps(stepsVal);render();}
+function saveScreenInput(){screenVal=parseInt(screenInput)||0;saveScreen(screenVal);render();}
 
 function renderTimer(){
   const el=document.getElementById("timer-widget");if(!el)return;
@@ -411,6 +446,66 @@ function stepsHTML(){
       <button class="steps-save" onclick="saveStepsInput()">Save</button>
     </div>
     <div class="steps-bar"><div class="steps-fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function screenHTML(){
+  const over=screenVal>SCREEN_LIMIT;
+  const pct=Math.min(100,Math.round((screenVal/SCREEN_LIMIT)*100));
+  const col=over?"#D85A30":"#B07FE0";
+  const hrs=screenVal>=60?`${Math.floor(screenVal/60)}h ${screenVal%60}m`:`${screenVal}m`;
+  return `<div class="screen-section">
+    <div class="steps-header">
+      <div><div class="steps-title">📵 Doomscroll time</div><div style="font-size:11px;color:var(--sub)">Stay under ${SCREEN_LIMIT} min</div></div>
+      <div style="text-align:right"><div class="steps-val" style="color:${col}">${hrs}</div><div style="font-size:11px;color:var(--sub)">${over?`${screenVal-SCREEN_LIMIT}m over 😬`:`${SCREEN_LIMIT-screenVal}m to spare`}</div></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="steps-input" type="number" placeholder="Minutes doomscrolled..." value="${screenInput}" onchange="screenInput=this.value" oninput="screenInput=this.value" onkeydown="if(event.key==='Enter')saveScreenInput()"/>
+      <button class="steps-save" style="background:${col}" onclick="saveScreenInput()">Save</button>
+    </div>
+    <div class="steps-bar"><div class="steps-fill" style="width:${pct}%;background:${col}"></div></div>
+  </div>`;
+}
+
+function streakOf(qualify){
+  let s=0;const d=new Date();d.setHours(0,0,0,0);
+  if(!qualify(dateKey(d)))d.setDate(d.getDate()-1);
+  while(qualify(dateKey(d))){s++;d.setDate(d.getDate()-1);if(s>2000)break;}
+  return s;
+}
+function bestStreak(qualify,lookback=400){
+  let best=0,cur=0;const d=new Date();d.setHours(0,0,0,0);
+  for(let i=0;i<lookback;i++){if(qualify(dateKey(d))){cur++;if(cur>best)best=cur;}else cur=0;d.setDate(d.getDate()-1);}
+  return best;
+}
+const MEDALS=[{n:3,ico:"🥉",name:"Getting started"},{n:7,ico:"🥈",name:"One week"},{n:14,ico:"🥇",name:"Two weeks"},{n:30,ico:"🏆",name:"One month"},{n:60,ico:"💎",name:"Two months"},{n:100,ico:"👑",name:"Century"}];
+function streakHTML(){
+  const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll();
+  const active=k=>((water[k]||0)>0)||((steps[k]||0)>0)||((meals[k]||[]).length>0)||(k in screen)||(arch[k]&&arch[k].done>0);
+  const waterG=k=>(water[k]||0)>=WATER_GOAL;
+  const stepsG=k=>(steps[k]||0)>=STEPS_GOAL;
+  const tasksG=k=>arch[k]&&arch[k].total&&(arch[k].done/arch[k].total)>=0.8;
+  const lowScr=k=>(k in screen)&&screen[k]<=SCREEN_LIMIT;
+  const streak=streakOf(active);
+  const best=Math.max(bestStreak(active),streak);
+  const isBest=streak>0&&streak>=best;
+  const next=MEDALS.find(m=>m.n>streak);
+  const chips=[["💧","Water",streakOf(waterG)],["👟","Steps",streakOf(stepsG)],["✅","Tasks",streakOf(tasksG)],["📵","Low screen",streakOf(lowScr)]];
+  return `<div class="streak-card">
+    <div class="streak-top">
+      <div class="streak-flame">🔥</div>
+      <div>
+        <div class="streak-num">${streak}<span class="streak-unit">day${streak===1?"":"s"}</span></div>
+        <div class="streak-lbl">${streak===0?"Log anything today to start a streak":isBest?"🌟 Personal best — keep it alive!":`Best: ${best} days`}</div>
+      </div>
+    </div>
+    <div class="streak-chips">
+      ${chips.map(([e,n,v])=>`<div class="streak-chip"><span>${e}</span><b>${v}</b><i>${n}</i></div>`).join("")}
+    </div>
+    <div class="medal-row">
+      ${MEDALS.map(m=>{const earned=best>=m.n;return `<div class="medal${earned?"":" locked"}" title="${m.name} (${m.n} days)"><div class="medal-ico">${earned?m.ico:"🔒"}</div><div class="medal-n">${m.n}d</div></div>`;}).join("")}
+    </div>
+    ${next?`<div class="medal-next"><div class="medal-next-track"><div class="medal-next-fill" style="width:${Math.round(streak/next.n*100)}%"></div></div><div class="medal-next-lbl">${next.n-streak} day${next.n-streak===1?"":"s"} to ${next.ico} ${next.name}</div></div>`:`<div class="medal-next-lbl" style="text-align:center">👑 You've earned every medal. Legend.</div>`}
   </div>`;
 }
 
@@ -521,26 +616,31 @@ function monthData(offset){
   const base=new Date();base.setDate(1);base.setMonth(base.getMonth()+offset);
   const year=base.getFullYear(),month=base.getMonth();
   const first=new Date(year,month,1),last=new Date(year,month+1,0);
-  const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog();
+  const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll();
   const days=[];
-  for(let dn=1;dn<=last.getDate();dn++){const dt=new Date(year,month,dn),k=dateKey(dt);days.push({day:dn,key:k,water:water[k]||0,steps:steps[k]||0,meals:(meals[k]||[]).length,tasks:arch[k]||null});}
+  for(let dn=1;dn<=last.getDate();dn++){const dt=new Date(year,month,dn),k=dateKey(dt);days.push({day:dn,key:k,water:water[k]||0,steps:steps[k]||0,meals:(meals[k]||[]).length,screen:(k in screen)?screen[k]:null,tasks:arch[k]||null});}
   return {year,month,first,last,days};
 }
 function barChart(values,max,color){
   return `<div class="trend-bars">${values.map(v=>{const h=max?Math.min(100,(v/max)*100):0;return `<div class="tb"><div class="tb-fill" style="height:${h}%;background:${color}"></div></div>`;}).join("")}</div>`;
 }
+function barChartC(values,max,colorFn){
+  return `<div class="trend-bars">${values.map(v=>{const h=max?Math.min(100,(v/max)*100):0;return `<div class="tb"><div class="tb-fill" style="height:${h}%;background:${colorFn(v)}"></div></div>`;}).join("")}</div>`;
+}
 function monthHTML(){
   const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
   const md=monthData(monthOffset);
   const today=new Date();today.setHours(0,0,0,0);
-  let wSum=0,wN=0,sSum=0,sN=0,tD=0,tT=0,mealCount=0;const catAgg={};
+  let wSum=0,wN=0,sSum=0,sN=0,tD=0,tT=0,mealCount=0,scrSum=0,scrN=0,activeDays=0;const catAgg={};
   md.days.forEach(d=>{
     if(d.water>0){wSum+=d.water;wN++;}
     if(d.steps>0){sSum+=d.steps;sN++;}
+    if(d.screen!==null){scrSum+=d.screen;scrN++;}
     mealCount+=d.meals;
+    if(d.water>0||d.steps>0||d.meals>0||d.screen!==null||(d.tasks&&d.tasks.done>0))activeDays++;
     if(d.tasks){tD+=d.tasks.done;tT+=d.tasks.total;Object.entries(d.tasks.tags||{}).forEach(([tag,v])=>{if(!catAgg[tag])catAgg[tag]={d:0,t:0};catAgg[tag].d+=v.d;catAgg[tag].t+=v.t;});}
   });
-  const avgW=wN?wSum/wN:0,avgS=sN?Math.round(sSum/sN):0,taskPct=tT?Math.round(tD/tT*100):0;
+  const avgW=wN?wSum/wN:0,avgS=sN?Math.round(sSum/sN):0,taskPct=tT?Math.round(tD/tT*100):0,avgScr=scrN?Math.round(scrSum/scrN):0;
 
   let html=`<div class="month-nav">
     <button class="month-arrow" onclick="monthOffset--;selMonthKey=null;render()">‹</button>
@@ -553,6 +653,8 @@ function monthHTML(){
     <div class="sum-card"><div class="sum-val" style="color:#1D9E75">${avgS.toLocaleString()}</div><div class="sum-lbl">Avg steps / logged day</div><div class="sum-sub">${sN} days tracked</div></div>
     <div class="sum-card"><div class="sum-val" style="color:#7F77DD">${taskPct}%</div><div class="sum-lbl">Task completion</div><div class="sum-sub">${tD}/${tT} tasks</div></div>
     <div class="sum-card"><div class="sum-val" style="color:#D4537E">${mealCount}</div><div class="sum-lbl">Meals logged</div><div class="sum-sub">this month</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${avgScr>SCREEN_LIMIT?"#D85A30":"#B07FE0"}">${avgScr}m</div><div class="sum-lbl">Avg doomscroll</div><div class="sum-sub">limit ${SCREEN_LIMIT}m · ${scrN} days</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:#5DCAA5">${activeDays}</div><div class="sum-lbl">Active days</div><div class="sum-sub">days you showed up</div></div>
   </div>`;
 
   const lead=(md.first.getDay()===0?6:md.first.getDay()-1);
@@ -594,6 +696,7 @@ function monthHTML(){
   html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Task completion</div><div class="trend-avg">${taskPct}% avg</div></div>${barChart(md.days.map(d=>d.tasks&&d.tasks.total?Math.round(d.tasks.done/d.tasks.total*100):0),100,"#7F77DD")}</div>`;
   html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Water (L)</div><div class="trend-avg">goal 2.5L</div></div>${barChart(md.days.map(d=>d.water),WATER_GOAL,"#378ADD")}</div>`;
   html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Steps</div><div class="trend-avg">goal 8k</div></div>${barChart(md.days.map(d=>d.steps),STEPS_GOAL,"#1D9E75")}</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Doomscroll (min)</div><div class="trend-avg">limit ${SCREEN_LIMIT}m · red = over</div></div>${barChartC(md.days.map(d=>d.screen||0),Math.max(SCREEN_LIMIT*2,...md.days.map(d=>d.screen||0)),v=>v>SCREEN_LIMIT?"#D85A30":"#B07FE0")}</div>`;
   return html;
 }
 
@@ -629,13 +732,15 @@ function render(){
     <div class="timer-top"><div class="timer-label">${timerLabel}</div><div class="timer-controls"><button class="timer-btn pause-btn" onclick="pauseTimer()">${timerRunning?"Pause":"Resume"}</button><button class="timer-btn" onclick="stopTimer()">Stop</button></div></div>
     <div class="timer-display">${Math.floor(timerSec/60)}:${String(timerSec%60).padStart(2,"0")}</div>
     <div class="timer-bar"><div class="timer-fill" style="width:${timerSec/timerTotal*100}%;background:${timerColor}"></div></div>
-    <div class="timer-note">Phone down. You're already doing it.</div>
+    <div class="timer-note">🍅 Pomodoro for ADHD · Phone down. You're already doing it.</div>
   </div>`;
 
   // STATS VIEW
   if(view==="dash"){
+    html+=streakHTML();
     html+=waterHTML();
     html+=stepsHTML();
+    html+=screenHTML();
     html+=`<div class="stats-tabs">
       <button class="stats-tab${statsTab==="week"?" active":""}" onclick="statsTab='week';render()">This week</button>
       <button class="stats-tab${statsTab==="month"?" active":""}" onclick="statsTab='month';render()">Monthly history</button>
@@ -647,6 +752,7 @@ function render(){
   if(view==="now"){
     html+=waterHTML();
     html+=stepsHTML();
+    html+=screenHTML();
     if(curBlockIdx>=0){
       const b=day.blocks[curBlockIdx];
       const C={Spirit:{color:"#D4537E",bg:"#FBEAF0",tc:"#72243E"},Body:{color:"#5DCAA5",bg:"#E1F5EE",tc:"#085041"},Health:{color:"#D85A30",bg:"#FAECE7",tc:"#712B13"},IBM:{color:"#666",bg:"#F1EFE8",tc:"#333"},Career:{color:"#7F77DD",bg:"#EEEDFE",tc:"#3C3489"},Skills:{color:"#1D9E75",bg:"#E1F5EE",tc:"#085041"},CSCI:{color:"#888780",bg:"#F1EFE8",tc:"#444441"},Content:{color:"#BA7517",bg:"#FAEEDA",tc:"#633806"},Life:{color:"#378ADD",bg:"#E6F1FB",tc:"#0C447C"}};
@@ -661,7 +767,7 @@ function render(){
           <div class="chk" style="border-color:${tasks[ti]?col.color:col.tc};background:${tasks[ti]?col.color:"transparent"}">${tasks[ti]?"✓":""}</div>
           <div class="task-text${tasks[ti]?" done":""}" style="color:${col.tc}">${t}</div>
         </div>`).join("")}
-        ${!b.fixed?`<button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">▶ Start 25-min timer</button>`:""}
+        ${!b.fixed?`<div class="pomo-wrap"><button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">▶ Start 25-min timer</button><span class="pomo-tag" style="color:${col.tc}">🍅 Pomodoro for ADHD — one short sprint at a time</span></div>`:""}
       </div>`;
       if(curBlockIdx<day.blocks.length-1){
         const nb=day.blocks[curBlockIdx+1];
@@ -705,7 +811,7 @@ function render(){
             <div class="task-text${tasks[ti]?" done":""}">${t}</div>
           </div>`).join("")}
           ${b.note?`<div class="block-note">${b.note}</div>`:""}
-          ${!b.fixed?`<button class="mini-timer-btn" onclick="startTimer('${b.name}','${col.color}')">▶ 25-min timer</button>`:""}
+          ${!b.fixed?`<div class="pomo-wrap"><button class="mini-timer-btn" onclick="startTimer('${b.name}','${col.color}')">▶ 25-min timer</button><span class="pomo-tag">🍅 Pomodoro for ADHD</span></div>`:""}
         </div>`:""}
       </div>`;
     });
