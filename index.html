@@ -204,6 +204,22 @@
   .medal-next-fill{height:6px;background:linear-gradient(90deg,#ff8c28,#ffd23f);border-radius:100px;transition:width .4s}
   .medal-next-lbl{font-size:11px;color:var(--sub)}
 
+  /* Journal + mood */
+  .journal-card{background:var(--bg2);border-radius:var(--radius);padding:16px;margin-top:14px;border:0.5px solid var(--border)}
+  .journal-title{font-size:14px;font-weight:600;color:var(--text)}
+  .journal-q{font-size:12px;color:var(--sub);margin:4px 0 12px}
+  .mood-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .mood-btn{border:none;border-radius:14px;padding:12px 4px;text-align:center;transition:transform .12s,box-shadow .12s;opacity:.7}
+  .mood-btn b{display:block;font-size:13px;font-weight:700}
+  .mood-btn span{display:block;font-size:10px;opacity:.8;margin-top:1px}
+  .mood-btn.sel{opacity:1;transform:translateY(-2px);box-shadow:0 0 0 2.5px var(--text)}
+  .journal-text{width:100%;min-height:90px;resize:vertical;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;padding:12px;margin-bottom:10px}
+  .journal-save{padding:10px 18px;border-radius:10px;border:none;background:var(--text);color:var(--bg);font-size:13px;font-weight:600}
+  .journal-saved{font-size:12px;color:var(--sub);margin-left:10px}
+  .mood-graph-card{background:var(--bg2);border-radius:var(--radius);padding:14px;margin-bottom:20px;border:0.5px solid var(--border)}
+  .mood-graph-scroll{overflow-x:auto;scrollbar-width:none}
+  .mood-graph-scroll::-webkit-scrollbar{display:none}
+
   @media(prefers-color-scheme:light){
     :root{--bg:#f5f5f5;--bg2:#fff;--bg3:#ebebeb;--border:#ddd;--text:#111;--sub:#777}
   }
@@ -288,8 +304,16 @@ const DAYS=[
 ];
 
 // Storage
-const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps",MEALS_K="life_os_meals",ARCH_K="life_os_archive",SCREEN_K="life_os_screen";
+const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps",MEALS_K="life_os_meals",ARCH_K="life_os_archive",SCREEN_K="life_os_screen",JOURNAL_K="life_os_journal";
 const TAGS={Spirit:"#D4537E",Body:"#5DCAA5",Health:"#D85A30",IBM:"#9a9a9a",Career:"#7F77DD",Skills:"#1D9E75",CSCI:"#888780",Content:"#BA7517",Life:"#378ADD"};
+// Mood shades of the day — point is HIGH for anger, lowest for peace
+const MOODS=[
+  {id:"raag",   label:"Raag",   en:"Anger",   color:"#D64545", text:"#fff",     pt:4},
+  {id:"bhay",   label:"Bhay",   en:"Fear",    color:"#1F5E3D", text:"#fff",     pt:3},
+  {id:"dhairya",label:"Dhairya",en:"Courage", color:"#E8C23B", text:"#3a2f00",  pt:2},
+  {id:"shaanti",label:"Shaanti",en:"Peace",   color:"#F2F2F2", text:"#333",     pt:1},
+];
+function moodById(id){return MOODS.find(m=>m.id===id);}
 function todayKey(){const n=new Date();return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`;}
 function dateKey(d){return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
 function weekIdToDate(w){const p=w.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
@@ -313,6 +337,9 @@ function saveSteps(v){try{const d=JSON.parse(localStorage.getItem(STEPS_K)||"{}"
 function loadScreen(){try{const r=localStorage.getItem(SCREEN_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
 function saveScreen(v){try{const d=JSON.parse(localStorage.getItem(SCREEN_K)||"{}");d[todayKey()]=v;localStorage.setItem(SCREEN_K,JSON.stringify(d));pushRemote("screen",d);}catch(e){}}
 function loadScreenAll(){try{const r=localStorage.getItem(SCREEN_K);if(r)return JSON.parse(r);}catch(e){}return {};}
+function loadJournalAll(){try{const r=localStorage.getItem(JOURNAL_K);if(r)return JSON.parse(r);}catch(e){}return {};}
+function getJournal(k){return loadJournalAll()[k]||null;}
+function saveJournal(mood,text){try{const d=loadJournalAll();d[todayKey()]={mood:mood||null,text:text||"",ts:Date.now()};localStorage.setItem(JOURNAL_K,JSON.stringify(d));pushRemote("journal",d);}catch(e){}}
 function loadMealsLog(){try{const r=localStorage.getItem(MEALS_K);if(r)return JSON.parse(r);}catch(e){}return {};}
 function getLoggedMeals(key){const d=loadMealsLog();return d[key]||[];}
 function logMeal(m){try{const d=loadMealsLog(),k=todayKey(),arr=d[k]||[];if(!arr.includes(m))arr.push(m);d[k]=arr;localStorage.setItem(MEALS_K,JSON.stringify(d));pushRemote("meals",d);}catch(e){}render();}
@@ -352,8 +379,10 @@ async function syncFromRemote(){
     if(map.steps)localStorage.setItem(STEPS_K,JSON.stringify(map.steps));
     if(map.meals)localStorage.setItem(MEALS_K,JSON.stringify(map.meals));
     if(map.screen)localStorage.setItem(SCREEN_K,JSON.stringify(map.screen));
+    if(map.journal)localStorage.setItem(JOURNAL_K,JSON.stringify(map.journal));
     archiveStateFor(cw,state);
     waterLevel=loadWater();stepsVal=loadSteps();screenVal=loadScreen();
+    if(!journalText&&!journalMood){const je=getJournal(todayKey())||{};journalMood=je.mood||null;journalText=je.text||"";}
     render();
   }catch(e){}
 }
@@ -374,6 +403,9 @@ let stepsVal=loadSteps();
 let stepsInput=stepsVal||"";
 let screenVal=loadScreen();
 let screenInput=screenVal||"";
+let _je=getJournal(todayKey())||{};
+let journalMood=_je.mood||null;
+let journalText=_je.text||"";
 let statsTab="week";
 let monthOffset=0;
 let selMonthKey=null;
@@ -400,6 +432,8 @@ function toggle(dayName,bi,ti){
 function setWater(idx){waterLevel=WATER_LEVELS[idx];saveWater(waterLevel);render();}
 function saveStepsInput(){stepsVal=parseInt(stepsInput)||0;saveSteps(stepsVal);render();}
 function saveScreenInput(){screenVal=parseInt(screenInput)||0;saveScreen(screenVal);render();}
+function setMood(m){journalMood=m;render();}
+function saveJournalEntry(){saveJournal(journalMood,journalText);render();}
 
 function renderTimer(){
   const el=document.getElementById("timer-widget");if(!el)return;
@@ -506,6 +540,42 @@ function streakHTML(){
       ${MEDALS.map(m=>{const earned=best>=m.n;return `<div class="medal${earned?"":" locked"}" title="${m.name} (${m.n} days)"><div class="medal-ico">${earned?m.ico:"🔒"}</div><div class="medal-n">${m.n}d</div></div>`;}).join("")}
     </div>
     ${next?`<div class="medal-next"><div class="medal-next-track"><div class="medal-next-fill" style="width:${Math.round(streak/next.n*100)}%"></div></div><div class="medal-next-lbl">${next.n-streak} day${next.n-streak===1?"":"s"} to ${next.ico} ${next.name}</div></div>`:`<div class="medal-next-lbl" style="text-align:center">👑 You've earned every medal. Legend.</div>`}
+  </div>`;
+}
+
+function journalHTML(){
+  const saved=getJournal(todayKey());
+  const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return `<div class="journal-card">
+    <div class="journal-title">📔 Today's journal</div>
+    <div class="journal-q">How did you do today? Pick the shade of your day (raag).</div>
+    <div class="mood-row">
+      ${MOODS.map(m=>`<button class="mood-btn${journalMood===m.id?" sel":""}" style="background:${m.color};color:${m.text}" onclick="setMood('${m.id}')"><b>${m.label}</b><span>${m.en}</span></button>`).join("")}
+    </div>
+    <textarea class="journal-text" placeholder="Write about your day — what happened, what you felt..." oninput="journalText=this.value">${esc(journalText)}</textarea>
+    <button class="journal-save" onclick="saveJournalEntry()">${saved?"Update entry":"Save entry"}</button>
+    ${saved&&saved.ts?`<span class="journal-saved">Saved ✓</span>`:""}
+  </div>`;
+}
+
+function moodGraphHTML(days){
+  const logged=days.filter(d=>d.mood);
+  const n=days.length;
+  const W=Math.max(300,n*12),H=176,padL=80,padR=16,padT=14,padB=18;
+  const yFor=pt=>padT+((4-pt)/3)*(H-padT-padB);
+  const xFor=i=>padL+(n<=1?0:(i/(n-1))*(W-padL-padR));
+  let g="";
+  MOODS.forEach(m=>{const y=yFor(m.pt);g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--border)" stroke-width="1"/><circle cx="${padL-14}" cy="${y}" r="5" fill="${m.color}" stroke="var(--border)"/><text x="${padL-24}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--sub)">${m.label}</text>`;});
+  let path="";
+  logged.forEach((d,idx)=>{const i=days.indexOf(d),x=xFor(i),y=yFor(moodById(d.mood).pt);path+=(idx===0?"M":"L")+x.toFixed(1)+" "+y.toFixed(1)+" ";});
+  const line=logged.length>1?`<path d="${path}" fill="none" stroke="var(--sub)" stroke-width="2" stroke-opacity=".45"/>`:"";
+  let pts="";
+  logged.forEach(d=>{const i=days.indexOf(d),m=moodById(d.mood);pts+=`<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(m.pt).toFixed(1)}" r="5.5" fill="${m.color}" stroke="var(--bg2)" stroke-width="2"><title>Day ${d.day}: ${m.label} (${m.en})</title></circle>`;});
+  const svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${g}${line}${pts}</svg>`;
+  return `<div class="mood-graph-card">
+    <div class="dash-title">Mood over time</div>
+    <div class="mood-graph-scroll">${svg}</div>
+    ${logged.length?"":`<div style="font-size:12px;color:var(--sub);text-align:center;padding:6px 0">No moods logged yet — journal a day to see it here.</div>`}
   </div>`;
 }
 
@@ -616,9 +686,9 @@ function monthData(offset){
   const base=new Date();base.setDate(1);base.setMonth(base.getMonth()+offset);
   const year=base.getFullYear(),month=base.getMonth();
   const first=new Date(year,month,1),last=new Date(year,month+1,0);
-  const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll();
+  const arch=loadArchive(),{water,steps}=loadWeekData(),meals=loadMealsLog(),screen=loadScreenAll(),journal=loadJournalAll();
   const days=[];
-  for(let dn=1;dn<=last.getDate();dn++){const dt=new Date(year,month,dn),k=dateKey(dt);days.push({day:dn,key:k,water:water[k]||0,steps:steps[k]||0,meals:(meals[k]||[]).length,screen:(k in screen)?screen[k]:null,tasks:arch[k]||null});}
+  for(let dn=1;dn<=last.getDate();dn++){const dt=new Date(year,month,dn),k=dateKey(dt);days.push({day:dn,key:k,water:water[k]||0,steps:steps[k]||0,meals:(meals[k]||[]).length,screen:(k in screen)?screen[k]:null,mood:(journal[k]&&journal[k].mood)||null,tasks:arch[k]||null});}
   return {year,month,first,last,days};
 }
 function barChart(values,max,color){
@@ -683,6 +753,8 @@ function monthHTML(){
       </div>`;
     }
   }
+
+  html+=moodGraphHTML(md.days);
 
   const cats=Object.keys(catAgg).sort((a,b)=>(catAgg[b].t?catAgg[b].d/catAgg[b].t:0)-(catAgg[a].t?catAgg[a].d/catAgg[a].t:0));
   if(cats.length){
@@ -777,6 +849,7 @@ function render(){
     } else {
       html+=`<div style="background:var(--bg2);border-radius:12px;padding:20px;text-align:center;color:var(--sub);font-size:14px;border:0.5px solid var(--border)">No scheduled block right now.<br><span style="font-size:12px">Check the Day view for your full schedule.</span></div>`;
     }
+    html+=journalHTML();
     html+=`<button class="rescue-toggle" onclick="showRescue=!showRescue;render()">😵 Overwhelmed? Open rescue mode</button>`;
     if(showRescue){
       const rescues=[["Ground first","5 breaths + water. Nothing else yet."],["Tiniest job task","Open resume. Change one word. Done."],["Eat something","Doesn't have to be perfect. Just eat."],["Move","Stand up. Walk around. 2 minutes."],["Text Tirth","One kind thing. That's all."],["Reset screen","Close everything. One tab only."]];
