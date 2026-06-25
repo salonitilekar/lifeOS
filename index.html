@@ -34,10 +34,24 @@
   .day-btn.today{border-color:#7F77DD;color:#7F77DD}
   .day-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
   .day-btn.today.active{background:#7F77DD;color:#fff;border-color:#7F77DD}
-  .view-toggle{display:flex;gap:4px;padding:0 16px 10px;margin-top:6px}
-  .view-btn{padding:5px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--sub);font-size:12px}
-  .view-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
-  .content{padding:14px 16px}
+  .content{padding:14px 16px calc(128px + env(safe-area-inset-bottom))}
+  /* Bottom navigation */
+  .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--bg);border-top:0.5px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
+  .day-strip{display:flex;gap:5px;padding:9px 12px 3px}
+  .dbtn{flex:1;padding:6px 0;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--sub);font-size:12px;font-weight:600;text-align:center;transition:all .15s}
+  .dbtn.today{border-color:#7F77DD;color:#7F77DD}
+  .dbtn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .dbtn.today.active{background:#7F77DD;color:#fff;border-color:#7F77DD}
+  .tab-bar{display:flex;padding:4px 6px 6px}
+  .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border:none;background:none;color:var(--sub);font-size:10px;font-weight:500}
+  .tab-btn.active{color:var(--text)}
+  .tab-btn.active .ic{color:#7F77DD}
+  /* Collapsed tracker summary */
+  .track-collapsed{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 14px;margin-bottom:12px;cursor:pointer}
+  .tc-title{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--text)}
+  .tc-meta{display:inline-flex;align-items:center;gap:9px;font-size:13px}
+  .tc-done{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#1D9E75}
+  .tc-meta .chevron{color:var(--sub)}
   .timer-card{border-radius:var(--radius);padding:16px;margin-bottom:14px;border:1.5px solid}
   .timer-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
   .timer-label{font-size:13px;color:var(--sub)}
@@ -477,6 +491,9 @@ function nowH(){return new Date().getHours()+new Date().getMinutes()/60;}
 let state=loadState();
 let activeDayIdx=todayIdx();
 let view="now";
+const VIEWS=["now","day","month","dash"];
+let secOpen={};
+function toggleSec(key){secOpen[key]=!secOpen[key];render();}
 let timerSec=0,timerTotal=0,timerLabel="",timerColor="#7F77DD",timerRunning=false,timerInterval=null;
 let openBlocks={};
 let showRescue=false;
@@ -534,14 +551,22 @@ function renderTimer(){
   el.querySelector(".pause-btn").textContent=timerRunning?"Pause":"Resume";
 }
 
+function collapsedTrack(key,icon,color,label,valText){
+  return `<div class="track-collapsed" onclick="toggleSec('${key}')">
+    <div class="tc-title">${ic(icon,15,color)} ${label}</div>
+    <div class="tc-meta"><span style="color:${color};font-weight:600">${valText}</span><span class="tc-done">${ic('check',13)} done</span><span class="chevron">${ic('chevron',16)}</span></div>
+  </div>`;
+}
 function waterHTML(){
   const curIdx=WATER_LEVELS.indexOf(waterLevel);
   const pct=(waterLevel/WATER_GOAL*100).toFixed(0);
   const fillPct=curIdx<0?0:(curIdx/(WATER_LEVELS.length-1)*100);
+  const goalMet=waterLevel>=WATER_GOAL;
+  if(goalMet&&!secOpen.water)return collapsedTrack('water','droplet','#378ADD','Water intake',waterLevel+'L');
   return `<div class="water-section">
-    <div class="water-header">
+    <div class="water-header"${goalMet?` style="cursor:pointer" onclick="toggleSec('water')"`:""}>
       <div><div class="water-title">${ic('droplet',15,'#378ADD')} Water intake</div><div class="water-goal-txt">Goal: 2.5 L / day</div></div>
-      <div style="text-align:right"><div class="water-val">${waterLevel}L</div><div class="water-goal-txt">${pct}% of goal</div></div>
+      <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="water-val">${waterLevel}L</div><div class="water-goal-txt">${pct}% of goal</div></div>${goalMet?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="position:relative;padding:8px 0">
       <div style="position:absolute;left:10px;right:10px;top:50%;transform:translateY(-50%);height:4px;background:var(--bg3);border-radius:100px;z-index:0"></div>
@@ -558,10 +583,12 @@ function waterHTML(){
 
 function stepsHTML(){
   const pct=Math.min(100,Math.round((stepsVal/STEPS_GOAL)*100));
+  const goalMet=stepsVal>=STEPS_GOAL;
+  if(goalMet&&!secOpen.steps)return collapsedTrack('steps','footprints','#1D9E75','Steps today',stepsVal.toLocaleString());
   return `<div class="steps-section">
-    <div class="steps-header">
+    <div class="steps-header"${goalMet?` style="cursor:pointer" onclick="toggleSec('steps')"`:""}>
       <div><div class="steps-title">${ic('footprints',15,'#1D9E75')} Steps today</div><div style="font-size:11px;color:var(--sub)">Goal: 8,000 steps</div></div>
-      <div style="text-align:right"><div class="steps-val">${stepsVal.toLocaleString()}</div><div style="font-size:11px;color:var(--sub)">${pct}% of goal</div></div>
+      <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="steps-val">${stepsVal.toLocaleString()}</div><div style="font-size:11px;color:var(--sub)">${pct}% of goal</div></div>${goalMet?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <input class="steps-input" type="number" placeholder="Enter steps..." value="${stepsInput}" id="steps-inp" onchange="stepsInput=this.value" oninput="stepsInput=this.value" onkeydown="if(event.key==='Enter')saveStepsInput()"/>
@@ -576,10 +603,12 @@ function screenHTML(){
   const pct=Math.min(100,Math.round((screenVal/SCREEN_LIMIT)*100));
   const col=over?"#D85A30":"#B07FE0";
   const hrs=screenVal>=60?`${Math.floor(screenVal/60)}h ${screenVal%60}m`:`${screenVal}m`;
+  const win=screenVal>0&&!over; // logged and under the limit = the win
+  if(win&&!secOpen.screen)return collapsedTrack('screen','phone','#B07FE0','Doomscroll time',`${hrs} · under limit`);
   return `<div class="screen-section">
-    <div class="steps-header">
+    <div class="steps-header"${win?` style="cursor:pointer" onclick="toggleSec('screen')"`:""}>
       <div><div class="steps-title">${ic('phone',15,'#B07FE0')} Doomscroll time</div><div style="font-size:11px;color:var(--sub)">Stay under ${SCREEN_LIMIT} min</div></div>
-      <div style="text-align:right"><div class="steps-val" style="color:${col}">${hrs}</div><div style="font-size:11px;color:var(--sub)">${over?`${screenVal-SCREEN_LIMIT}m over`:`${SCREEN_LIMIT-screenVal}m to spare`}</div></div>
+      <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="steps-val" style="color:${col}">${hrs}</div><div style="font-size:11px;color:var(--sub)">${over?`${screenVal-SCREEN_LIMIT}m over`:`${SCREEN_LIMIT-screenVal}m to spare`}</div></div>${win?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <input class="steps-input" type="number" placeholder="Minutes doomscrolled..." value="${screenInput}" onchange="screenInput=this.value" oninput="screenInput=this.value" onkeydown="if(event.key==='Enter')saveScreenInput()"/>
@@ -940,14 +969,7 @@ function render(){
       <div><div class="app-title">Life OS</div><div class="header-meta">${day.name} · ${new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · <span id="clk">${fmtClock()}</span></div></div>
       <div class="header-stats"><div class="stat-big">${done}/${total}</div><div class="stat-label">tasks done</div></div>
     </div>
-    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-    <div class="day-nav">${DAYS.map((d,i)=>`<button class="day-btn${i===tIdx?" today":""}${i===activeDayIdx?" active":""}" onclick="activeDayIdx=${i};view='day';render()">${d.short}</button>`).join("")}</div>
-    <div class="view-toggle">
-      <button class="view-btn${view==="now"?" active":""}" onclick="view='now';render()">${ic('play',15)} Now</button>
-      <button class="view-btn${view==="day"?" active":""}" onclick="view='day';render()">${ic('list',15)} Day</button>
-      <button class="view-btn${view==="week"?" active":""}" onclick="view='week';render()">${ic('calendar',15)} Week</button>
-      <button class="view-btn${view==="dash"?" active":""}" onclick="view='dash';render()">${ic('chart',15)} Stats</button>
-    </div>
+    <div class="progress-bar" style="margin-bottom:12px"><div class="progress-fill" style="width:${pct}%"></div></div>
   </div>`;
 
   if(showInstall){
@@ -1046,12 +1068,24 @@ function render(){
     });
   }
 
-  // WEEK VIEW (calendar planner + week glance)
-  if(view==="week"){
+  // MONTH VIEW (calendar planner + week glance)
+  if(view==="month"){
     html+=weekPlanHTML();
   }
 
   html+=`</div>`;
+
+  const DINIT=["M","T","W","T","F","S","S"];
+  html+=`<div class="bottom-nav">
+    <div class="day-strip">${DAYS.map((d,i)=>`<button class="dbtn${i===tIdx?" today":""}${i===activeDayIdx?" active":""}" onclick="activeDayIdx=${i};view='day';render()">${DINIT[i]}</button>`).join("")}</div>
+    <div class="tab-bar">
+      <button class="tab-btn${view==="now"?" active":""}" onclick="view='now';render()">${ic('play',20)}Now</button>
+      <button class="tab-btn${view==="day"?" active":""}" onclick="view='day';render()">${ic('list',20)}Day</button>
+      <button class="tab-btn${view==="month"?" active":""}" onclick="view='month';render()">${ic('calendar',20)}Month</button>
+      <button class="tab-btn${view==="dash"?" active":""}" onclick="view='dash';render()">${ic('chart',20)}Stats</button>
+    </div>
+  </div>`;
+
   document.getElementById("app").innerHTML=html;
   renderTimer();
 }
@@ -1059,6 +1093,28 @@ function render(){
 setInterval(()=>{const el=document.getElementById("clk");if(el)el.textContent=fmtClock();},1000);
 archiveStateFor(getWeekId(),state);
 render();
+
+// Swipe sideways to move between views
+(function(){
+  const app=document.getElementById("app");
+  if(!app)return;
+  let x0=null,y0=null,t0=0;
+  app.addEventListener("touchstart",e=>{
+    if(e.touches.length!==1){x0=null;return;}
+    const t=e.touches[0];x0=t.clientX;y0=t.clientY;t0=Date.now();
+  },{passive:true});
+  app.addEventListener("touchend",e=>{
+    if(x0===null)return;
+    const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;
+    x0=null;
+    if(Date.now()-t0>600)return;
+    if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.4)return;
+    if(e.target&&e.target.closest&&e.target.closest("input,textarea,select"))return;
+    const i=VIEWS.indexOf(view);if(i<0)return;
+    if(dx<0&&i<VIEWS.length-1){view=VIEWS[i+1];render();}
+    else if(dx>0&&i>0){view=VIEWS[i-1];render();}
+  },{passive:true});
+})();
 
 if(SYNC_ON){
   syncFromRemote();
