@@ -112,6 +112,7 @@
   .food-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .food-btn{padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-weight:500;text-align:center;cursor:pointer;text-decoration:none;display:block;line-height:1.4}
   .food-btn:active{opacity:.7}
+  .food-btn.logged{border-color:#1D9E75;color:#1D9E75;background:rgba(29,158,117,0.08)}
   .food-btn span{display:block;font-size:18px;margin-bottom:4px}
 
   /* Steps */
@@ -151,6 +152,13 @@ const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9aw
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
 const STEPS_GOAL=8000;
+
+// ---- Supabase sync (fill these in to enable cross-device sync) ----
+const SUPABASE_URL="https://dwuiheikbxkegqwcdymn.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_WLnDOaHYRhjEPA9l95--UA_a_RW8COH";
+const SYNC_ON=!!(SUPABASE_URL&&SUPABASE_ANON_KEY);
+const REST=`${SUPABASE_URL}/rest/v1/lifeos_data`;
+const SB_HEADERS={apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,"Content-Type":"application/json"};
 
 const t=(h,m=0)=>h+m/60;
 const fmtH=h=>{const hh=Math.floor(h)%12||12,mm=Math.round((h%1)*60),ap=h>=12&&h<24?"pm":"am";return `${hh}${mm?":"+String(mm).padStart(2,"0"):""}${ap}`;};
@@ -215,7 +223,7 @@ const DAYS=[
 ];
 
 // Storage
-const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps";
+const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os_steps",MEALS_K="life_os_meals";
 function todayKey(){const n=new Date();return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`;}
 function getWeekId(){const now=new Date(),day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));return `${mon.getFullYear()}-${mon.getMonth()+1}-${mon.getDate()}`;}
 function freshState(){const s={};DAYS.forEach(d=>{s[d.name]={};d.blocks.forEach((b,i)=>{s[d.name][i]=b.tasks.map(()=>false);});});return s;}
@@ -226,16 +234,39 @@ function loadState(){
     const r=localStorage.getItem(SK);if(r)return JSON.parse(r);
   }catch(e){}return freshState();
 }
-function saveState(s){try{localStorage.setItem(SK,JSON.stringify(s));}catch(e){}}
+function saveState(s){try{localStorage.setItem(SK,JSON.stringify(s));pushRemote("state",s);}catch(e){}}
 function loadWater(){try{const r=localStorage.getItem(WATER_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
-function saveWater(v){try{const d=JSON.parse(localStorage.getItem(WATER_K)||"{}");d[todayKey()]=v;localStorage.setItem(WATER_K,JSON.stringify(d));}catch(e){}}
+function saveWater(v){try{const d=JSON.parse(localStorage.getItem(WATER_K)||"{}");d[todayKey()]=v;localStorage.setItem(WATER_K,JSON.stringify(d));pushRemote("water",d);}catch(e){}}
 function loadSteps(){try{const r=localStorage.getItem(STEPS_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
-function saveSteps(v){try{const d=JSON.parse(localStorage.getItem(STEPS_K)||"{}");d[todayKey()]=v;localStorage.setItem(STEPS_K,JSON.stringify(d));}catch(e){}}
+function saveSteps(v){try{const d=JSON.parse(localStorage.getItem(STEPS_K)||"{}");d[todayKey()]=v;localStorage.setItem(STEPS_K,JSON.stringify(d));pushRemote("steps",d);}catch(e){}}
+function loadMealsLog(){try{const r=localStorage.getItem(MEALS_K);if(r)return JSON.parse(r);}catch(e){}return {};}
+function getLoggedMeals(key){const d=loadMealsLog();return d[key]||[];}
+function logMeal(m){try{const d=loadMealsLog(),k=todayKey(),arr=d[k]||[];if(!arr.includes(m))arr.push(m);d[k]=arr;localStorage.setItem(MEALS_K,JSON.stringify(d));pushRemote("meals",d);}catch(e){}render();}
 function loadWeekData(){
   const water={},steps={};
   try{const w=localStorage.getItem(WATER_K);if(w)Object.assign(water,JSON.parse(w));}catch(e){}
   try{const s=localStorage.getItem(STEPS_K);if(s)Object.assign(steps,JSON.parse(s));}catch(e){}
   return {water,steps};
+}
+
+// ---- Cloud sync helpers ----
+async function sbGetAll(){const res=await fetch(`${REST}?select=key,value`,{headers:SB_HEADERS});if(!res.ok)throw new Error("sb "+res.status);return res.json();}
+async function sbUpsert(key,value){await fetch(REST,{method:"POST",headers:{...SB_HEADERS,Prefer:"resolution=merge-duplicates"},body:JSON.stringify({key,value})});}
+function pushRemote(key,value){if(SYNC_ON)sbUpsert(key,value).catch(()=>{});}
+async function syncFromRemote(){
+  if(!SYNC_ON)return;
+  try{
+    const rows=await sbGetAll(),map={};
+    rows.forEach(r=>map[r.key]=r.value);
+    const cw=getWeekId();
+    if(map.week===cw&&map.state){localStorage.setItem(WK,cw);localStorage.setItem(SK,JSON.stringify(map.state));state=map.state;}
+    else{const fresh=freshState();localStorage.setItem(WK,cw);localStorage.setItem(SK,JSON.stringify(fresh));state=fresh;pushRemote("week",cw);pushRemote("state",fresh);}
+    if(map.water)localStorage.setItem(WATER_K,JSON.stringify(map.water));
+    if(map.steps)localStorage.setItem(STEPS_K,JSON.stringify(map.steps));
+    if(map.meals)localStorage.setItem(MEALS_K,JSON.stringify(map.meals));
+    waterLevel=loadWater();stepsVal=loadSteps();
+    render();
+  }catch(e){}
 }
 
 const fmtClock=()=>{const n=new Date();let h=n.getHours(),m=n.getMinutes(),ap=h>=12?"PM":"AM";h=h%12||12;return `${h}:${String(m).padStart(2,"0")} ${ap}`;};
@@ -325,11 +356,11 @@ function stepsHTML(){
 
 function foodHTML(meals){
   if(!meals||meals.length===0)return "";
-  const today=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+  const logged=getLoggedMeals(todayKey());
   return `<div class="food-section">
     <div class="food-title">📸 Log your meal</div>
     <div class="food-btns">
-      ${meals.map(m=>`<a class="food-btn" href="${FORM_BASE}${encodeURIComponent(m)}" target="_blank"><span>${m==="Breakfast"?"🌅":m==="Lunch"?"☀️":"🌙"}</span>${m}</a>`).join("")}
+      ${meals.map(m=>{const done=logged.includes(m);return `<a class="food-btn${done?" logged":""}" href="${FORM_BASE}${encodeURIComponent(m)}" target="_blank" onclick="logMeal('${m}')"><span>${done?"✅":(m==="Breakfast"?"🌅":m==="Lunch"?"☀️":"🌙")}</span>${m}${done?" ✓":""}</a>`;}).join("")}
     </div>
   </div>`;
 }
@@ -342,7 +373,7 @@ function ringsSVG(rings,size=180,stroke=14,gap=6){
     const circ=2*Math.PI*rad;
     const dash=circ*(r.pct/100);
     svg+=`<circle cx="${cx}" cy="${cy}" r="${rad}" fill="none" stroke="${r.trackColor}" stroke-width="${stroke}"/>`;
-    svg+=`<circle cx="${cx}" cy="${cy}" r="${rad}" fill="none" stroke="${r.color}" stroke-width="${stroke}" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${circ/4}" stroke-linecap="round" style="transition:stroke-dasharray .5s"/>`;
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${rad}" fill="none" stroke="${r.color}" stroke-width="${stroke}" stroke-dasharray="${dash} ${circ}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})" style="transition:stroke-dasharray .5s"/>`;
   });
   svg+=`</svg>`;
   return svg;
@@ -356,14 +387,14 @@ function dashboardHTML(){
   // Today's rings
   const todayWater=water[today]||0;
   const todaySteps=steps[today]||0;
-  const todayMeals=day.blocks.reduce((a,b)=>a.concat(b.meals||[]),[]);
-  const uniqueMeals=[...new Set(todayMeals)];
-  const mealPct=Math.round((uniqueMeals.length/3)*100);
+  const scheduledMeals=[...new Set(DAYS[todayIdx()].blocks.reduce((a,b)=>a.concat(b.meals||[]),[]))];
+  const loggedToday=getLoggedMeals(today).filter(m=>scheduledMeals.includes(m));
+  const mealPct=scheduledMeals.length?Math.round((loggedToday.length/scheduledMeals.length)*100):0;
 
   const todayRings=[
     {label:"Water",val:`${todayWater}L / 2.5L`,pct:Math.min(100,Math.round(todayWater/2.5*100)),color:"#378ADD",trackColor:"#1a3a5c"},
     {label:"Steps",val:`${(todaySteps).toLocaleString()} / 8,000`,pct:Math.min(100,Math.round(todaySteps/8000*100)),color:"#1D9E75",trackColor:"#0a2e1e"},
-    {label:"Meals logged",val:`${uniqueMeals.length} / 3`,pct:mealPct,color:"#D4537E",trackColor:"#3d1020"},
+    {label:"Meals logged",val:`${loggedToday.length} / ${scheduledMeals.length}`,pct:mealPct,color:"#D4537E",trackColor:"#3d1020"},
   ];
 
   // Week rings
@@ -557,6 +588,12 @@ function render(){
 
 setInterval(()=>{const el=document.getElementById("clk");if(el)el.textContent=fmtClock();},1000);
 render();
+
+if(SYNC_ON){
+  syncFromRemote();
+  setInterval(syncFromRemote,20000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncFromRemote();});
+}
 </script>
 </body>
 </html>
