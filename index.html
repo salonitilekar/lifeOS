@@ -21,7 +21,7 @@
   .view-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
   .header{position:sticky;top:0;z-index:50;padding:14px 16px 12px;padding-top:max(14px,env(safe-area-inset-top));background:var(--bg);border-bottom:1px solid var(--border)}
   .header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .app-title{font-size:var(--fs-major);font-weight:500;color:var(--text)}
+  .app-title{font-size:18px;font-weight:500;color:var(--text)}
   .header-meta{font-size:var(--fs-sub);color:var(--sub);margin-top:2px;font-weight:400}
   .header-stats{text-align:right}
   .stat-big{font-size:var(--fs-major);font-weight:500;color:var(--text)}
@@ -61,7 +61,7 @@
   .timer-bar{height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-top:10px}
   .timer-fill{height:4px;border-radius:100px;transition:width 1s linear}
   .timer-note{font-size:var(--fs-sub);color:var(--sub);margin-top:8px;display:inline-flex;align-items:center;gap:6px}
-  .now-card{border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;border:none;background:var(--bg2);border-left:3px solid var(--block-accent,#3ea6ff)}
+  .now-card{border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;border:none;background:var(--bg2);box-shadow:none}
   .now-label{font-size:var(--fs-sub);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin-bottom:6px}
   .now-name{font-size:var(--fs-title);font-weight:500;margin-bottom:6px;color:var(--text)}
   .now-note{font-size:var(--fs-major);color:var(--sub);margin-bottom:14px;line-height:1.43;font-weight:400}
@@ -254,7 +254,7 @@
   .medal-next-lbl{font-size:var(--fs-sub);color:var(--sub)}
 
   /* Journal + mood */
-  .journal-card{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-top:10px;border:none}
+  .journal-card{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-top:10px;margin-bottom:0;border:none}
   .journal-title{font-size:var(--fs-title);font-weight:500;color:var(--text)}
   .journal-q{font-size:var(--fs-sub);color:var(--sub);margin:4px 0 12px;font-weight:400}
   .mood-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
@@ -265,7 +265,7 @@
   .journal-text{width:100%;min-height:90px;resize:vertical;background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:var(--fs-major);line-height:1.43;padding:12px;margin-bottom:10px}
   .journal-text:focus{outline:none;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
   .journal-save{display:block;width:100%;padding:10px 12px;border-radius:100px;border:none;background:var(--text);color:var(--bg);font-size:var(--fs-btn);font-weight:500}
-  .mood-graph-card{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px;border:none}
+  .mood-graph-card{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-top:16px;margin-bottom:16px;border:none;box-shadow:none}
   .mood-graph-scroll{overflow-x:auto;scrollbar-width:none}
   .mood-graph-scroll::-webkit-scrollbar{display:none}
 
@@ -1043,7 +1043,7 @@ function render(){
       const C={Spirit:{color:"#D4537E",bg:"#FBEAF0",tc:"#72243E"},Body:{color:"#5DCAA5",bg:"#E1F5EE",tc:"#085041"},Health:{color:"#D85A30",bg:"#FAECE7",tc:"#712B13"},IBM:{color:"#666",bg:"#F1EFE8",tc:"#333"},Career:{color:"#7F77DD",bg:"#EEEDFE",tc:"#3C3489"},Skills:{color:"#1D9E75",bg:"#E1F5EE",tc:"#085041"},CSCI:{color:"#888780",bg:"#F1EFE8",tc:"#444441"},Content:{color:"#BA7517",bg:"#FAEEDA",tc:"#633806"},Life:{color:"#378ADD",bg:"#E6F1FB",tc:"#0C447C"}};
       const col=C[b.tag]||C.Life;
       const tasks=(state[todayDay.name]||{})[curBlockIdx]||b.tasks.map(()=>false);
-      html+=`<div class="now-card" style="--block-accent:${col.color}">
+      html+=`<div class="now-card">
         <div class="now-label">Do this now · ${fmtH(b.st)}–${fmtH(b.en)}</div>
         <div class="now-name">${b.name}</div>
         ${b.note?`<div class="now-note">${b.note}</div>`:""}
