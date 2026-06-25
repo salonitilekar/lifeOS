@@ -937,7 +937,7 @@ function render(){
 
   let html=`<div class="header">
     <div class="header-row">
-      <div><div class="app-title">Life OS</div><div class="header-meta">${day.name} · <span id="clk">${fmtClock()}</span></div></div>
+      <div><div class="app-title">Life OS</div><div class="header-meta">${day.name} · ${new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · <span id="clk">${fmtClock()}</span></div></div>
       <div class="header-stats"><div class="stat-big">${done}/${total}</div><div class="stat-label">tasks done</div></div>
     </div>
     <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
