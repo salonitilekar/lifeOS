@@ -173,13 +173,20 @@ struct WebView: UIViewRepresentable {
                 guard let body = message.body as? [String: Any],
                       let action = body["action"] as? String,
                       action == "sync" else { return }
-                HealthKitManager.syncTodaySteps { result in
+                HealthKitManager.syncSteps { result in
                     DispatchQueue.main.async { [weak self] in
                         let target = message.webView ?? self?.webView
                         switch result {
-                        case .success(let steps):
+                        case .success(let days):
+                            guard let jsonData = try? JSONSerialization.data(withJSONObject: days),
+                                  let json = String(data: jsonData, encoding: .utf8) else {
+                                target?.evaluateJavaScript(
+                                    "window.onHealthStepsError&&window.onHealthStepsError({code:'encode'})"
+                                )
+                                return
+                            }
                             target?.evaluateJavaScript(
-                                "window.onHealthSteps&&window.onHealthSteps({steps:\(steps)})"
+                                "window.onHealthSteps&&window.onHealthSteps({days:\(json)})"
                             )
                         case .failure(let code):
                             target?.evaluateJavaScript(

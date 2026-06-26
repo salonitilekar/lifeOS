@@ -290,7 +290,7 @@
 <body>
 <div id="app"></div>
 <script>
-const APP_BUILD="250625c";
+const APP_BUILD="250625d";
 const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9awg--qBIYriCFinVSM8KJj_wbx0yw/viewform?usp=pp_url&entry.1213268056=";
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
@@ -433,6 +433,17 @@ function loadWater(){try{const r=localStorage.getItem(WATER_K);if(r){const d=JSO
 function saveWater(v){try{const d=JSON.parse(localStorage.getItem(WATER_K)||"{}");d[todayKey()]=v;localStorage.setItem(WATER_K,JSON.stringify(d));pushRemote("water",d);}catch(e){}}
 function loadSteps(){try{const r=localStorage.getItem(STEPS_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
 function saveSteps(v){try{const d=JSON.parse(localStorage.getItem(STEPS_K)||"{}");d[todayKey()]=v;localStorage.setItem(STEPS_K,JSON.stringify(d));pushRemote("steps",d);}catch(e){}}
+function mergeHealthSteps(days){
+  if(!days||typeof days!=="object")return;
+  try{
+    const d=JSON.parse(localStorage.getItem(STEPS_K)||"{}");
+    Object.assign(d,days);
+    localStorage.setItem(STEPS_K,JSON.stringify(d));
+    pushRemote("steps",d);
+    const today=todayKey();
+    if(days[today]!=null){stepsVal=Math.max(0,Math.round(days[today]));stepsInput=String(stepsVal);}
+  }catch(e){}
+}
 function loadScreen(){try{const r=localStorage.getItem(SCREEN_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
 function saveScreen(v){try{const d=JSON.parse(localStorage.getItem(SCREEN_K)||"{}");d[todayKey()]=v;localStorage.setItem(SCREEN_K,JSON.stringify(d));pushRemote("screen",d);}catch(e){}}
 function loadScreenAll(){try{const r=localStorage.getItem(SCREEN_K);if(r)return JSON.parse(r);}catch(e){}return {};}
@@ -651,11 +662,10 @@ function setWater(idx){waterLevel=WATER_LEVELS[idx];saveWater(waterLevel);render
 function saveStepsInput(){stepsVal=parseInt(stepsInput)||0;saveSteps(stepsVal);healthSyncState="";render();}
 function saveScreenInput(){screenVal=parseInt(screenInput)||0;saveScreen(screenVal);render();}
 window.onHealthSteps=function(p){
-  if(!p||typeof p.steps!=="number")return;
+  if(!p)return;
   healthSyncState="ok";
-  const s=Math.max(0,Math.round(p.steps));
-  stepsVal=s;stepsInput=String(s);
-  saveSteps(stepsVal);
+  if(p.days)mergeHealthSteps(p.days);
+  else if(typeof p.steps==="number"){stepsVal=Math.max(0,Math.round(p.steps));stepsInput=String(stepsVal);saveSteps(stepsVal);}
   render();
 };
 window.onHealthStepsError=function(p){healthSyncState=p?.code||"error";render();};
