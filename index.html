@@ -288,6 +288,7 @@
 <body>
 <div id="app"></div>
 <script>
+const APP_BUILD="250625b";
 const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9awg--qBIYriCFinVSM8KJj_wbx0yw/viewform?usp=pp_url&entry.1213268056=";
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
@@ -1090,7 +1091,7 @@ function render(){
 
   let html=`<div class="header">
     <div class="header-row">
-      <div><div class="app-title">Life OS</div><div class="header-meta">${headerDay.name} · ${new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · <span id="clk">${fmtClock()}</span></div></div>
+      <div><div class="app-title">Life OS</div><div class="header-meta">${headerDay.name} · ${new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · <span id="clk">${fmtClock()}</span> · build ${APP_BUILD}</div></div>
       <div class="header-stats"><div class="stat-big">${done}/${total}</div><div class="stat-label">tasks done</div></div>
     </div>
     <div class="progress-bar" style="margin-bottom:12px"><div class="progress-fill" style="width:${pct}%"></div></div>
