@@ -22,12 +22,8 @@ enum HealthKitManager {
             return
         }
 
-        store.requestAuthorization(toShare: [], read: [stepType]) { granted, _ in
-            guard granted else {
-                completion(.failure(HealthError(code: "denied")))
-                return
-            }
-
+        store.requestAuthorization(toShare: [], read: [stepType]) { _, _ in
+            // Read authorization status is intentionally opaque — proceed and query.
             let calendar = Calendar.current
             let todayStart = calendar.startOfDay(for: Date())
             guard let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStart) else {
