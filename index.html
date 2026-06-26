@@ -675,7 +675,8 @@ function syncHealthSteps(force){
   if(!force&&now-lastHealthSync<30000)return;
   lastHealthSync=now;
   healthSyncState="syncing";
-  try{window.webkit.messageHandlers.health.postMessage({action:"sync"});}catch(e){healthSyncState="error";}
+  render();
+  try{window.webkit.messageHandlers.health.postMessage({action:"sync"});}catch(e){healthSyncState="error";render();}
 }
 function setMood(m){journalMood=m;render();}
 function saveJournalEntry(){saveJournal(journalMood,journalText);render();}
@@ -724,7 +725,16 @@ function waterHTML(){
 function stepsHTML(){
   const pct=Math.min(100,Math.round((stepsVal/STEPS_GOAL)*100));
   const goalMet=stepsVal>=STEPS_GOAL;
-  const healthHint=HEALTH_NATIVE?(healthSyncState==="denied"?" · Health access denied":healthSyncState==="syncing"?" · syncing…":healthSyncState==="ok"?" · from Apple Health":" · Apple Health"):"";
+  const healthHint=HEALTH_NATIVE?(
+    healthSyncState==="syncing"?" · syncing…":
+    healthSyncState==="ok"?" · from Apple Health":
+    healthSyncState==="denied"?" · Health access denied":
+    healthSyncState==="unavailable"?" · Health unavailable on this device":
+    healthSyncState==="query"?" · couldn't read steps — check Health permissions":
+    healthSyncState==="error"||healthSyncState==="encode"?" · sync failed — try again":
+    healthSyncState?" · "+healthSyncState:
+    " · tap Health to sync"
+  ):"";
   if(goalMet&&!secOpen.steps)return collapsedTrack('steps','footprints','#1D9E75','Steps today',stepsVal.toLocaleString());
   return `<div class="steps-section">
     <div class="steps-header"${goalMet?` style="cursor:pointer" onclick="toggleSec('steps')"`:""}>

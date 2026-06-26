@@ -22,47 +22,49 @@ enum HealthKitManager {
             return
         }
 
-        store.requestAuthorization(toShare: [], read: [stepType]) { _, _ in
-            // Read authorization status is intentionally opaque — proceed and query.
-            let calendar = Calendar.current
-            let todayStart = calendar.startOfDay(for: Date())
-            guard let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStart) else {
-                completion(.failure(HealthError(code: "date")))
-                return
-            }
-
-            var results: [String: Int] = [:]
-            let group = DispatchGroup()
-            var firstError: HealthError?
-
-            group.enter()
-            fetchSteps(stepType: stepType, start: todayStart, end: Date()) { result in
-                if case .success(let count) = result {
-                    results[dateKey(for: Date())] = count
-                }
-                if case .failure(let error) = result {
-                    firstError = firstError ?? error
-                }
-                group.leave()
-            }
-
-            group.enter()
-            fetchSteps(stepType: stepType, start: yesterdayStart, end: todayStart) { result in
-                if case .success(let count) = result {
-                    results[dateKey(for: yesterdayStart)] = count
-                }
-                if case .failure(let error) = result {
-                    firstError = firstError ?? error
-                }
-                group.leave()
-            }
-
-            group.notify(queue: .main) {
-                if results.isEmpty, let error = firstError {
-                    completion(.failure(error))
+        DispatchQueue.main.async {
+            store.requestAuthorization(toShare: [], read: [stepType]) { _, _ in
+                // Read authorization status is intentionally opaque — proceed and query.
+                let calendar = Calendar.current
+                let todayStart = calendar.startOfDay(for: Date())
+                guard let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStart) else {
+                    completion(.failure(HealthError(code: "date")))
                     return
                 }
-                completion(.success(results))
+
+                var results: [String: Int] = [:]
+                let group = DispatchGroup()
+                var firstError: HealthError?
+
+                group.enter()
+                fetchSteps(stepType: stepType, start: todayStart, end: Date()) { result in
+                    if case .success(let count) = result {
+                        results[dateKey(for: Date())] = count
+                    }
+                    if case .failure(let error) = result {
+                        firstError = firstError ?? error
+                    }
+                    group.leave()
+                }
+
+                group.enter()
+                fetchSteps(stepType: stepType, start: yesterdayStart, end: todayStart) { result in
+                    if case .success(let count) = result {
+                        results[dateKey(for: yesterdayStart)] = count
+                    }
+                    if case .failure(let error) = result {
+                        firstError = firstError ?? error
+                    }
+                    group.leave()
+                }
+
+                group.notify(queue: .main) {
+                    if results.isEmpty, let error = firstError {
+                        completion(.failure(error))
+                        return
+                    }
+                    completion(.success(results))
+                }
             }
         }
     }
