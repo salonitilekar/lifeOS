@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css"/>
 <style>
-  :root{--bg:#0f0f0f;--bg2:#212121;--bg3:#303030;--bg4:#3f3f3f;--border:rgba(255,255,255,.08);--text:#fff;--sub:#aaa;--radius:12px;--radius-lg:16px;--radius-sm:8px;--font:"Geist Sans","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--fs-sub:8px;--fs-btn:10px;--fs-title:12px;--fs-major:14px}
+  :root{--bg:#0f0f0f;--bg2:#212121;--bg3:#303030;--bg4:#3f3f3f;--border:rgba(255,255,255,.08);--text:#fff;--sub:#aaa;--accent:#eab676;--accent-track:#5c4228;--water:#31ceff;--water-track:#125a70;--steps:#34d25c;--steps-track:#145a28;--screen:#dd0011;--screen-track:#5c0010;--radius:12px;--radius-lg:16px;--radius-sm:8px;--font:"Geist Sans","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--fs-sub:8px;--fs-btn:10px;--fs-title:12px;--fs-major:14px}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:var(--fs-major);font-weight:400;line-height:1.43;min-height:100dvh;padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased}
   button,input,textarea,select{font-family:var(--font)}
@@ -30,21 +30,21 @@
   .stat-big{font-size:var(--fs-major);font-weight:500;color:var(--text)}
   .stat-label{font-size:var(--fs-sub);color:var(--sub);font-weight:400}
   .progress-bar{height:3px;background:var(--bg3);border-radius:100px;overflow:hidden}
-  .progress-fill{height:3px;background:#3ea6ff;border-radius:100px;transition:width .4s}
+  .progress-fill{height:3px;background:var(--accent);border-radius:100px;transition:width .4s}
   .day-nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
   .day-nav::-webkit-scrollbar{display:none}
   .day-btn{padding:5px 13px;border-radius:100px;border:none;background:var(--bg3);color:var(--sub);font-size:var(--fs-btn);white-space:nowrap;flex-shrink:0;transition:all .15s}
-  .day-btn.today{color:#3ea6ff}
+  .day-btn.today{color:var(--accent)}
   .day-btn.active{background:var(--text);color:var(--bg)}
-  .day-btn.today.active{background:#3ea6ff;color:#0f0f0f}
+  .day-btn.today.active{background:var(--accent);color:#0f0f0f}
   .content{padding:12px 16px calc(118px + env(safe-area-inset-bottom))}
   /* Bottom navigation — YT Studio flat dock */
   .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:60;padding-bottom:max(6px,env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border)}
   .day-strip{display:flex;gap:6px;padding:10px 14px 4px}
   .dbtn{flex:1;padding:7px 0;border-radius:100px;border:none;background:var(--bg3);color:var(--sub);font-size:var(--fs-btn);font-weight:500;text-align:center;transition:all .15s}
-  .dbtn.today{color:#3ea6ff}
+  .dbtn.today{color:var(--accent)}
   .dbtn.active{background:var(--text);color:var(--bg)}
-  .dbtn.today.active{background:#3ea6ff;color:#0f0f0f}
+  .dbtn.today.active{background:var(--accent);color:#0f0f0f}
   .tab-bar{display:flex;padding:2px 6px 8px}
   .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border:none;background:transparent;color:var(--sub);font-size:var(--fs-btn);font-weight:500;border-radius:var(--radius-sm);transition:color .15s}
   .tab-btn.active{color:var(--text)}
@@ -55,7 +55,7 @@
   .tc-meta{display:inline-flex;align-items:center;gap:9px;font-size:var(--fs-major)}
   .tc-done{display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-sub);color:#2ba870}
   .tc-meta .chevron{color:var(--sub)}
-  .timer-card{border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;border:none;background:var(--bg2);border-left:3px solid var(--timer-accent,#3ea6ff)}
+  .timer-card{border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;border:none;background:var(--bg2);border-left:3px solid var(--timer-accent,var(--accent))}
   .timer-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
   .timer-label{font-size:var(--fs-sub);color:var(--sub)}
   .timer-controls{display:flex;gap:6px}
@@ -77,12 +77,12 @@
   .chk{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:var(--fs-sub);color:#fff;transition:all .15s}
   .task-text{font-size:var(--fs-major);font-weight:400;line-height:1.43;color:var(--text)}
   .task-text.done{text-decoration:line-through;opacity:.4}
-  .start-timer-btn{margin-top:14px;font-size:var(--fs-btn);padding:10px 16px;border-radius:100px;border:none;color:#fff;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%}
+  .start-timer-btn{margin-top:14px;font-size:var(--fs-btn);padding:10px 16px;border-radius:100px;border:none;background:var(--accent);color:#0f0f0f;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%}
   .next-block{background:var(--bg2);border-radius:var(--radius-lg);padding:14px 16px;border:none;margin-bottom:10px}
   .next-label{font-size:var(--fs-sub);color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
   .next-name{font-size:var(--fs-major);font-weight:500}
   .block-card{background:var(--bg2);border-radius:var(--radius-lg);border:none;margin-bottom:10px;overflow:hidden;transition:opacity .2s}
-  .block-card.current{background:var(--bg3);border-left:3px solid var(--block-accent,#3ea6ff)}
+  .block-card.current{background:var(--bg3);border-left:3px solid var(--block-accent,var(--accent))}
   .block-card.past{opacity:.4}
   .block-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
   .block-time{font-size:var(--fs-sub);color:var(--sub);width:68px;flex-shrink:0}
@@ -97,7 +97,7 @@
   .fixed-badge{font-size:var(--fs-sub);color:var(--sub);padding:2px 8px;border-radius:100px;background:var(--bg4);margin-left:6px;font-weight:400}
   .mini-timer-btn{margin-top:10px;font-size:var(--fs-btn);padding:6px 14px;border-radius:100px;border:none;background:var(--bg3);color:var(--text);display:inline-flex;align-items:center;gap:6px}
   .week-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);border:none;background:var(--bg2);margin-bottom:10px;cursor:pointer}
-  .week-row.today{box-shadow:inset 3px 0 0 #3ea6ff}
+  .week-row.today{box-shadow:inset 3px 0 0 var(--accent)}
   .week-day{font-size:var(--fs-title);font-weight:500;width:32px;flex-shrink:0}
   .week-meta{flex:1;min-width:0}
   .week-theme{font-size:var(--fs-title);font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -121,15 +121,15 @@
   .water-section{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px}
   .water-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
   .water-title{font-size:var(--fs-title);font-weight:500;color:var(--text)}
-  .water-val{font-size:var(--fs-major);font-weight:500;color:#378ADD}
+  .water-val{font-size:var(--fs-major);font-weight:500;color:var(--water)}
   .water-goal-txt{font-size:var(--fs-sub);color:var(--sub);font-weight:400}
   .water-slider-wrap{position:relative;padding:8px 0}
   .water-track{display:flex;justify-content:space-between;align-items:center;position:relative}
   .water-track::before{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:4px;background:var(--bg3);border-radius:100px;z-index:0}
-  .water-fill-bar{position:absolute;left:0;top:50%;transform:translateY(-50%);height:4px;background:#378ADD;border-radius:100px;z-index:1;transition:width .3s}
+  .water-fill-bar{position:absolute;left:0;top:50%;transform:translateY(-50%);height:4px;background:var(--water);border-radius:100px;z-index:1;transition:width .3s}
   .water-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--bg4);background:var(--bg3);cursor:pointer;z-index:2;position:relative;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
-  .water-dot.active{background:#378ADD;border-color:#378ADD;transform:scale(1.2)}
-  .water-dot.filled{background:#378ADD;border-color:#378ADD}
+  .water-dot.active{background:var(--water);border-color:var(--water);transform:scale(1.2)}
+  .water-dot.filled{background:var(--water);border-color:var(--water)}
   .water-labels{display:flex;justify-content:space-between;margin-top:6px}
   .water-lbl{font-size:var(--fs-sub);color:var(--sub);text-align:center;width:20px}
 
@@ -147,21 +147,15 @@
   .steps-section{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px}
   .steps-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .steps-title{font-size:var(--fs-title);font-weight:500;color:var(--text)}
-  .steps-val{font-size:var(--fs-major);font-weight:500;color:#2ba870}
+  .steps-val{font-size:var(--fs-major);font-weight:500;color:var(--steps)}
   .steps-input-wrap{display:flex;gap:8px;align-items:center}
   .steps-input{flex:1;background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 12px;font-family:var(--font)}
   .steps-input:focus{outline:none;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
-  .steps-save{padding:10px 16px;border-radius:100px;border:none;background:#2ba870;color:#0f0f0f;font-size:var(--fs-btn);font-weight:500}
-  .steps-health{padding:10px 14px;border-radius:100px;border:none;background:var(--bg4);color:var(--text);font-size:var(--fs-btn);font-weight:500;white-space:nowrap;flex-shrink:0}
+  .steps-save{padding:10px 16px;border-radius:100px;border:none;background:var(--steps);color:#0f0f0f;font-size:var(--fs-btn);font-weight:500}
+  .steps-health{padding:10px 16px;border-radius:100px;border:none;background:var(--steps);color:#0f0f0f;font-size:var(--fs-btn);font-weight:500;white-space:nowrap;flex-shrink:0}
   .steps-health:active{opacity:.75}
-  .steps-shortcut{padding:10px 14px;border-radius:100px;border:none;background:#1a3a2a;color:#5dcaa5;font-size:var(--fs-btn);font-weight:500;white-space:nowrap;flex-shrink:0}
-  .steps-shortcut:active{opacity:.75}
-  .steps-help{margin-top:10px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--bg3);font-size:var(--fs-sub);color:var(--sub);line-height:1.5}
-  .steps-help strong{color:var(--text);font-weight:500}
-  .steps-help ol{margin:8px 0 0 18px;padding:0}
-  .steps-help li{margin-bottom:6px}
   .steps-bar{height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-top:10px}
-  .steps-fill{height:4px;background:#2ba870;border-radius:100px;transition:width .4s}
+  .steps-fill{height:4px;background:var(--steps);border-radius:100px;transition:width .4s}
 
   /* Dashboard */
   .dash-section{margin-bottom:16px}
@@ -218,8 +212,8 @@
   /* To-dos / reminders */
   .cal-wrap.plan .cal-cell{background:var(--bg3)}
   .cal-wrap.plan .cal-cell.empty{background:transparent!important}
-  .cal-wrap.plan .cal-cell.today{box-shadow:inset 0 0 0 2px #3ea6ff;font-weight:500}
-  .cal-todo-badge{position:absolute;top:3px;right:3px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:#3ea6ff;color:#0f0f0f;font-size:var(--fs-sub);font-weight:600;display:flex;align-items:center;justify-content:center;line-height:1}
+  .cal-wrap.plan .cal-cell.today{box-shadow:inset 0 0 0 2px var(--accent);font-weight:500}
+  .cal-todo-badge{position:absolute;top:3px;right:3px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--accent);color:#0f0f0f;font-size:var(--fs-sub);font-weight:600;display:flex;align-items:center;justify-content:center;line-height:1}
   .todo-card{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;border:none}
   .todo-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
   .todo-card-head-left{display:flex;align-items:center;gap:8px;min-width:0}
@@ -229,7 +223,7 @@
   .todo-input{flex:1;min-width:0;background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 12px;font-family:var(--font)}
   .todo-input:focus{outline:none;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
   .todo-time{background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 8px;font-family:var(--font);width:auto;flex-shrink:0}
-  .todo-add-btn{flex-shrink:0;width:36px;height:36px;border-radius:10px;border:none;background:#3ea6ff;color:#0f0f0f;display:inline-flex;align-items:center;justify-content:center}
+  .todo-add-btn{flex-shrink:0;width:36px;height:36px;border-radius:10px;border:none;background:var(--accent);color:#0f0f0f;display:inline-flex;align-items:center;justify-content:center}
   .todo-add-btn:active{opacity:.8}
   .todo-list{margin-top:6px}
   .todo-item{display:flex;align-items:center;gap:10px;padding:10px 2px;border-top:1px solid var(--border)}
@@ -296,9 +290,17 @@
 <body>
 <div id="app"></div>
 <script>
-const APP_BUILD="250625f";
+const APP_BUILD="250625o";
 const HEALTH_SHORTCUT_NAME="Life OS Steps";
 const HEALTH_AUTO_KEY="health_auto_shortcut";
+const ACCENT_COLOR="#eab676";
+const ACCENT_TRACK="#5c4228";
+const WATER_COLOR="#31ceff";
+const WATER_TRACK="#125a70";
+const STEPS_COLOR="#34d25c";
+const STEPS_TRACK="#145a28";
+const SCREEN_COLOR="#dd0011";
+const SCREEN_TRACK="#5c0010";
 const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9awg--qBIYriCFinVSM8KJj_wbx0yw/viewform?usp=pp_url&entry.1213268056=";
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
@@ -383,9 +385,9 @@ const SK="life_os_v3",WK="life_os_week",WATER_K="life_os_water",STEPS_K="life_os
 const TAGS={Spirit:"#D4537E",Body:"#5DCAA5",Health:"#D85A30",IBM:"#9a9a9a",Career:"#7F77DD",Skills:"#1D9E75",CSCI:"#888780",Content:"#BA7517",Life:"#378ADD"};
 // Mood shades of the day — point is HIGH for anger, lowest for peace
 const MOODS=[
-  {id:"raag",   label:"Raag",   en:"Anger",   color:"#D64545", text:"#fff",     pt:4},
-  {id:"bhay",   label:"Bhay",   en:"Fear",    color:"#1F5E3D", text:"#fff",     pt:3},
-  {id:"dhairya",label:"Dhairya",en:"Courage", color:"#E8C23B", text:"#3a2f00",  pt:2},
+  {id:"raag",   label:"Raag",   en:"Anger",   color:"#dd0011", text:"#fff",     pt:4},
+  {id:"bhay",   label:"Bhay",   en:"Fear",    color:"#1c49bb", text:"#fff",     pt:3},
+  {id:"dhairya",label:"Dhairya",en:"Courage", color:"#acfd0b", text:"#1a2200",  pt:2},
   {id:"shaanti",label:"Shaanti",en:"Peace",   color:"#F2F2F2", text:"#333",     pt:1},
 ];
 function moodById(id){return MOODS.find(m=>m.id===id);}
@@ -543,7 +545,7 @@ let view="now";
 const VIEWS=["now","day","journal","month","dash"];
 let secOpen={};
 function toggleSec(key){secOpen[key]=!secOpen[key];render();}
-let timerSec=0,timerTotal=0,timerLabel="",timerColor="#7F77DD",timerRunning=false,timerInterval=null,timerEndAt=0;
+let timerSec=0,timerTotal=0,timerLabel="",timerColor=ACCENT_COLOR,timerRunning=false,timerInterval=null,timerEndAt=0;
 let openBlocks={};
 let showRescue=false;
 let showInstall=!localStorage.getItem("install_dismissed");
@@ -553,9 +555,8 @@ let stepsInput=stepsVal||"";
 let screenVal=loadScreen();
 let screenInput=screenVal||"";
 const HEALTH_NATIVE=!!(typeof window!=="undefined"&&window.webkit?.messageHandlers?.health);
-let lastHealthSync=0,healthSyncBooted=false,healthSyncState="",healthHelpOpen=false,healthSyncTimeout=0,lastShortcutRun=0;
+let lastHealthSync=0,healthSyncBooted=false,healthSyncState="",healthSyncTimeout=0,lastShortcutRun=0;
 function healthAutoEnabled(){try{return localStorage.getItem(HEALTH_AUTO_KEY)!=="0";}catch(e){return true;}}
-function setHealthAuto(on){try{localStorage.setItem(HEALTH_AUTO_KEY,on?"1":"0");}catch(e){}render();}
 function runHealthShortcut(){
   if(!HEALTH_NATIVE)return;
   healthSyncState="syncing";
@@ -694,7 +695,6 @@ window.onHealthSteps=function(p){
   render();
 };
 window.onHealthStepsError=function(p){clearTimeout(healthSyncTimeout);healthSyncState=p?.code||"error";render();};
-function toggleHealthHelp(){healthHelpOpen=!healthHelpOpen;render();}
 function syncHealthSteps(force){
   if(!HEALTH_NATIVE)return;
   const now=Date.now();
@@ -704,19 +704,9 @@ function syncHealthSteps(force){
   clearTimeout(healthSyncTimeout);
   render();
   healthSyncTimeout=setTimeout(()=>{
-    if(healthSyncState==="syncing"){healthSyncState="sideload";healthHelpOpen=true;render();}
+    if(healthSyncState==="syncing"){healthSyncState="sideload";render();}
   },3500);
-  try{window.webkit.messageHandlers.health.postMessage({action:"sync"});}catch(e){clearTimeout(healthSyncTimeout);healthSyncState="sideload";healthHelpOpen=true;render();}
-}
-function healthHelpHTML(){
-  return `<div class="steps-help">
-    <strong>Steps sync via Shortcuts</strong> (required for sideloaded apps)
-    <ol>
-      <li>Shortcut name must be exactly <strong>Life OS Steps</strong></li>
-      <li>Turn on <strong>Auto-sync on open</strong> below — runs your shortcut when Life OS opens</li>
-      <li>Optional: Shortcuts app → <strong>Automation</strong> tab → <strong>+</strong> → <strong>Time of Day</strong> (e.g. 8 AM) → Run <strong>Life OS Steps</strong> → turn off <strong>Ask Before Running</strong></li>
-    </ol>
-  </div>`;
+  try{window.webkit.messageHandlers.health.postMessage({action:"sync"});}catch(e){clearTimeout(healthSyncTimeout);healthSyncState="sideload";render();}
 }
 function setMood(m){journalMood=m;render();}
 function saveJournalEntry(){saveJournal(journalMood,journalText);render();}
@@ -743,17 +733,17 @@ function waterHTML(){
   const pct=(waterLevel/WATER_GOAL*100).toFixed(0);
   const fillPct=curIdx<0?0:(curIdx/(WATER_LEVELS.length-1)*100);
   const goalMet=waterLevel>=WATER_GOAL;
-  if(goalMet&&!secOpen.water)return collapsedTrack('water','droplet','#378ADD','Water intake',waterLevel+'L');
+  if(goalMet&&!secOpen.water)return collapsedTrack('water','droplet',WATER_COLOR,'Water intake',waterLevel+'L');
   return `<div class="water-section">
     <div class="water-header"${goalMet?` style="cursor:pointer" onclick="toggleSec('water')"`:""}>
-      <div><div class="water-title">${ic('droplet',15,'#378ADD')} Water intake</div><div class="water-goal-txt">Goal: 2.5 L / day</div></div>
+      <div><div class="water-title">${ic('droplet',15,WATER_COLOR)} Water intake</div><div class="water-goal-txt">Goal: 2.5 L / day</div></div>
       <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="water-val">${waterLevel}L</div><div class="water-goal-txt">${pct}% of goal</div></div>${goalMet?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="position:relative;padding:8px 0">
       <div style="position:absolute;left:10px;right:10px;top:50%;transform:translateY(-50%);height:4px;background:var(--bg3);border-radius:100px;z-index:0"></div>
-      <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);height:4px;background:#378ADD;border-radius:100px;z-index:1;transition:width .3s;width:calc(${fillPct/100} * (100% - 20px))"></div>
+      <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);height:4px;background:${WATER_COLOR};border-radius:100px;z-index:1;transition:width .3s;width:calc(${fillPct/100} * (100% - 20px))"></div>
       <div style="display:flex;justify-content:space-between;position:relative;z-index:2">
-        ${WATER_LEVELS.map((l,i)=>`<div onclick="setWater(${i})" style="width:22px;height:22px;border-radius:50%;border:2px solid ${i<=curIdx?"#378ADD":"var(--border)"};background:${i<curIdx?"#378ADD":i===curIdx?"#378ADD":"var(--bg3)"};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;${i===curIdx?"transform:scale(1.25)":""}" title="${l}L"></div>`).join("")}
+        ${WATER_LEVELS.map((l,i)=>`<div onclick="setWater(${i})" style="width:22px;height:22px;border-radius:50%;border:2px solid ${i<=curIdx?WATER_COLOR:"var(--border)"};background:${i<curIdx?WATER_COLOR:i===curIdx?WATER_COLOR:"var(--bg3)"};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;${i===curIdx?"transform:scale(1.25)":""}" title="${l}L"></div>`).join("")}
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;margin-top:6px">
@@ -769,26 +759,23 @@ function stepsHTML(){
     healthSyncState==="syncing"?" · syncing…":
     healthSyncState==="ok"?" · from Apple Health":
     healthSyncState==="shortcut-ok"?" · from Shortcuts":
-    healthSyncState==="sideload"?" · use Shortcuts to sync (tap ?)":
+    healthSyncState==="sideload"?" · use Shortcuts to sync":
     healthSyncState==="denied"?" · Health access denied":
     healthSyncState==="unavailable"?" · Health unavailable on this device":
     healthSyncState==="query"?" · couldn't read steps":
     healthSyncState==="error"||healthSyncState==="encode"?" · sync failed":
-    " · tap ? for Shortcuts sync"
+    ""
   ):"";
-  if(goalMet&&!secOpen.steps)return collapsedTrack('steps','footprints','#1D9E75','Steps today',stepsVal.toLocaleString());
+  if(goalMet&&!secOpen.steps)return collapsedTrack('steps','footprints',STEPS_COLOR,'Steps today',stepsVal.toLocaleString());
   return `<div class="steps-section">
     <div class="steps-header"${goalMet?` style="cursor:pointer" onclick="toggleSec('steps')"`:""}>
-      <div><div class="steps-title">${ic('footprints',15,'#1D9E75')} Steps today</div><div style="font-size:var(--fs-sub);color:var(--sub)">Goal: 8,000 steps${healthHint}</div></div>
+      <div><div class="steps-title">${ic('footprints',15,STEPS_COLOR)} Steps today</div><div style="font-size:var(--fs-sub);color:var(--sub)">Goal: 8,000 steps${healthHint}</div></div>
       <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="steps-val">${stepsVal.toLocaleString()}</div><div style="font-size:var(--fs-sub);color:var(--sub)">${pct}% of goal</div></div>${goalMet?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input class="steps-input" type="number" placeholder="Enter steps..." value="${stepsInput}" id="steps-inp" onchange="stepsInput=this.value" oninput="stepsInput=this.value" onkeydown="if(event.key==='Enter')saveStepsInput()"/>
-      ${HEALTH_NATIVE?`<button class="steps-health" onclick="runHealthShortcut()">${ic('footprints',14,'#2ba870')} Sync</button><button class="steps-shortcut" onclick="toggleHealthHelp()" title="Shortcuts help">?</button>`:""}
-      <button class="steps-save" onclick="saveStepsInput()">Save</button>
+      <input class="steps-input" type="number" placeholder="Enter steps..." value="${stepsInput}" id="steps-inp" onchange="stepsInput=this.value;saveStepsInput()" oninput="stepsInput=this.value" onkeydown="if(event.key==='Enter')saveStepsInput()"/>
+      ${HEALTH_NATIVE?`<button class="steps-health" onclick="runHealthShortcut()">Sync</button>`:""}
     </div>
-    ${HEALTH_NATIVE?`<label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:var(--fs-sub);color:var(--sub);cursor:pointer"><input type="checkbox"${healthAutoEnabled()?" checked":""} onchange="setHealthAuto(this.checked)" style="accent-color:#2ba870;width:16px;height:16px"/> Auto-sync on open (via Shortcuts)</label>`:""}
-    ${HEALTH_NATIVE&&healthHelpOpen?healthHelpHTML():""}
     <div class="steps-bar"><div class="steps-fill" style="width:${pct}%"></div></div>
   </div>`;
 }
@@ -796,13 +783,13 @@ function stepsHTML(){
 function screenHTML(){
   const over=screenVal>SCREEN_LIMIT;
   const pct=Math.min(100,Math.round((screenVal/SCREEN_LIMIT)*100));
-  const col=over?"#D85A30":"#B07FE0";
+  const col=SCREEN_COLOR;
   const hrs=screenVal>=60?`${Math.floor(screenVal/60)}h ${screenVal%60}m`:`${screenVal}m`;
   const win=screenVal>0&&!over; // logged and under the limit = the win
-  if(win&&!secOpen.screen)return collapsedTrack('screen','phone','#B07FE0','Doomscroll time',`${hrs} · under limit`);
+  if(win&&!secOpen.screen)return collapsedTrack('screen','phone',SCREEN_COLOR,'Doomscroll time',`${hrs} · under limit`);
   return `<div class="screen-section">
     <div class="steps-header"${win?` style="cursor:pointer" onclick="toggleSec('screen')"`:""}>
-      <div><div class="steps-title">${ic('phone',15,'#B07FE0')} Doomscroll time</div><div style="font-size:var(--fs-sub);color:var(--sub)">Stay under ${SCREEN_LIMIT} min</div></div>
+      <div><div class="steps-title">${ic('phone',15,SCREEN_COLOR)} Doomscroll time</div><div style="font-size:var(--fs-sub);color:var(--sub)">Stay under ${SCREEN_LIMIT} min</div></div>
       <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="steps-val" style="color:${col}">${hrs}</div><div style="font-size:var(--fs-sub);color:var(--sub)">${over?`${screenVal-SCREEN_LIMIT}m over`:`${SCREEN_LIMIT-screenVal}m to spare`}</div></div>${win?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -922,9 +909,9 @@ function dashboardHTML(){
   const mealPct=Math.round(logged3.length/3*100);
 
   const todayRings=[
-    {label:"Water",val:`${todayWater}L / 2.5L`,pct:Math.min(100,Math.round(todayWater/2.5*100)),color:"#378ADD",trackColor:"#1a3a5c"},
-    {label:"Steps",val:`${(todaySteps).toLocaleString()} / 8,000`,pct:Math.min(100,Math.round(todaySteps/8000*100)),color:"#1D9E75",trackColor:"#0a2e1e"},
-    {label:"Tasks",val:`${tStat.done} / ${tStat.total}`,pct:taskPct,color:"#3ea6ff",trackColor:"#1a3a52"},
+    {label:"Water",val:`${todayWater}L / 2.5L`,pct:Math.min(100,Math.round(todayWater/2.5*100)),color:WATER_COLOR,trackColor:WATER_TRACK},
+    {label:"Steps",val:`${(todaySteps).toLocaleString()} / 8,000`,pct:Math.min(100,Math.round(todaySteps/8000*100)),color:STEPS_COLOR,trackColor:STEPS_TRACK},
+    {label:"Tasks",val:`${tStat.done} / ${tStat.total}`,pct:taskPct,color:ACCENT_COLOR,trackColor:ACCENT_TRACK},
     {label:"Meals",val:`${logged3.length} / 3`,pct:mealPct,color:"#D4537E",trackColor:"#3d1020"},
   ];
 
@@ -946,8 +933,8 @@ function dashboardHTML(){
   const avgSteps=weekDays.reduce((a,d)=>a+d.steps,0)/7;
 
   const weekRings=[
-    {label:"Avg water",val:`${avgWater.toFixed(1)}L / 2.5L avg`,pct:Math.min(100,Math.round(avgWater/2.5*100)),color:"#378ADD",trackColor:"#1a3a5c"},
-    {label:"Avg steps",val:`${Math.round(avgSteps).toLocaleString()} / 8,000 avg`,pct:Math.min(100,Math.round(avgSteps/8000*100)),color:"#1D9E75",trackColor:"#0a2e1e"},
+    {label:"Avg water",val:`${avgWater.toFixed(1)}L / 2.5L avg`,pct:Math.min(100,Math.round(avgWater/2.5*100)),color:WATER_COLOR,trackColor:WATER_TRACK},
+    {label:"Avg steps",val:`${Math.round(avgSteps).toLocaleString()} / 8,000 avg`,pct:Math.min(100,Math.round(avgSteps/8000*100)),color:STEPS_COLOR,trackColor:STEPS_TRACK},
   ];
 
   return `
@@ -976,8 +963,8 @@ function dashboardHTML(){
     <div class="dash-grid">
       ${weekDays.map(d=>{
         const wr=[
-          {pct:Math.min(100,Math.round(d.water/2.5*100)),color:"#378ADD",trackColor:"#1a3a5c"},
-          {pct:Math.min(100,Math.round(d.steps/8000*100)),color:"#1D9E75",trackColor:"#0a2e1e"},
+          {pct:Math.min(100,Math.round(d.water/2.5*100)),color:WATER_COLOR,trackColor:WATER_TRACK},
+          {pct:Math.min(100,Math.round(d.steps/8000*100)),color:STEPS_COLOR,trackColor:STEPS_TRACK},
         ];
         return `<div class="dash-day-col">
           <div class="dash-day-lbl">${d.short}</div>
@@ -1025,11 +1012,11 @@ function monthHTML(){
   </div>`;
 
   html+=`<div class="sum-grid">
-    <div class="sum-card"><div class="sum-val" style="color:#378ADD">${avgW.toFixed(1)}L</div><div class="sum-lbl">Avg water / logged day</div><div class="sum-sub">${wN} days tracked</div></div>
-    <div class="sum-card"><div class="sum-val" style="color:#1D9E75">${avgS.toLocaleString()}</div><div class="sum-lbl">Avg steps / logged day</div><div class="sum-sub">${sN} days tracked</div></div>
-    <div class="sum-card"><div class="sum-val" style="color:#3ea6ff">${taskPct}%</div><div class="sum-lbl">Task completion</div><div class="sum-sub">${tD}/${tT} tasks</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${WATER_COLOR}">${avgW.toFixed(1)}L</div><div class="sum-lbl">Avg water / logged day</div><div class="sum-sub">${wN} days tracked</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${STEPS_COLOR}">${avgS.toLocaleString()}</div><div class="sum-lbl">Avg steps / logged day</div><div class="sum-sub">${sN} days tracked</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${ACCENT_COLOR}">${taskPct}%</div><div class="sum-lbl">Task completion</div><div class="sum-sub">${tD}/${tT} tasks</div></div>
     <div class="sum-card"><div class="sum-val" style="color:#D4537E">${mealCount}</div><div class="sum-lbl">Meals logged</div><div class="sum-sub">this month</div></div>
-    <div class="sum-card"><div class="sum-val" style="color:${avgScr>SCREEN_LIMIT?"#D85A30":"#B07FE0"}">${avgScr}m</div><div class="sum-lbl">Avg doomscroll</div><div class="sum-sub">limit ${SCREEN_LIMIT}m · ${scrN} days</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${SCREEN_COLOR}">${avgScr}m</div><div class="sum-lbl">Avg doomscroll</div><div class="sum-sub">limit ${SCREEN_LIMIT}m · ${scrN} days</div></div>
     <div class="sum-card"><div class="sum-val" style="color:#5DCAA5">${activeDays}</div><div class="sum-lbl">Active days</div><div class="sum-sub">days you showed up</div></div>
   </div>`;
 
@@ -1039,9 +1026,9 @@ function monthHTML(){
   md.days.forEach(d=>{
     const dt=new Date(md.year,md.month,d.day),future=dt>today;
     const pct=d.tasks&&d.tasks.total?Math.round(d.tasks.done/d.tasks.total*100):0;
-    const bg=pct>0?`rgba(62,166,255,${(0.12+0.5*pct/100).toFixed(2)})`:"var(--bg3)";
+    const bg=pct>0?`rgba(234,182,118,${(0.12+0.5*pct/100).toFixed(2)})`:"var(--bg3)";
     const tcol=pct>=45?"#fff":"var(--text)";
-    const dots=[d.water>=WATER_GOAL?`<div class="cal-dot" style="background:#378ADD"></div>`:"",d.steps>=STEPS_GOAL?`<div class="cal-dot" style="background:#1D9E75"></div>`:"",d.meals>=3?`<div class="cal-dot" style="background:#D4537E"></div>`:""].join("");
+    const dots=[d.water>=WATER_GOAL?`<div class="cal-dot" style="background:${WATER_COLOR}"></div>`:"",d.steps>=STEPS_GOAL?`<div class="cal-dot" style="background:${STEPS_COLOR}"></div>`:"",d.meals>=3?`<div class="cal-dot" style="background:#D4537E"></div>`:""].join("");
     html+=`<div class="cal-cell${selMonthKey===d.key?" sel":""}" style="background:${bg};opacity:${future?.4:1};color:${tcol}" onclick="selMonthKey='${d.key}';render()">${d.day}<div class="cal-dots">${dots}</div></div>`;
   });
   html+=`</div></div>`;
@@ -1052,22 +1039,22 @@ function monthHTML(){
       const p=selMonthKey.split("-").map(Number);
       const lbl=new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
       html+=`<div class="day-detail"><div class="day-detail-title">${lbl}</div>
-        <div class="cat-row"><div class="cat-name">Water</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.water/WATER_GOAL*100)}%;background:#378ADD"></div></div><div class="cat-val">${dd.water}L</div></div>
-        <div class="cat-row"><div class="cat-name">Steps</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.steps/STEPS_GOAL*100)}%;background:#1D9E75"></div></div><div class="cat-val">${dd.steps.toLocaleString()}</div></div>
+        <div class="cat-row"><div class="cat-name">Water</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.water/WATER_GOAL*100)}%;background:${WATER_COLOR}"></div></div><div class="cat-val">${dd.water}L</div></div>
+        <div class="cat-row"><div class="cat-name">Steps</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.steps/STEPS_GOAL*100)}%;background:${STEPS_COLOR}"></div></div><div class="cat-val">${dd.steps.toLocaleString()}</div></div>
         <div class="cat-row"><div class="cat-name">Meals</div><div class="cat-track"><div class="cat-fill" style="width:${Math.min(100,dd.meals/3*100)}%;background:#D4537E"></div></div><div class="cat-val">${dd.meals}/3</div></div>
-        <div class="cat-row"><div class="cat-name">Tasks</div><div class="cat-track"><div class="cat-fill" style="width:${dd.tasks&&dd.tasks.total?Math.round(dd.tasks.done/dd.tasks.total*100):0}%;background:#3ea6ff"></div></div><div class="cat-val">${dd.tasks?dd.tasks.done+"/"+dd.tasks.total:"—"}</div></div>
+        <div class="cat-row"><div class="cat-name">Tasks</div><div class="cat-track"><div class="cat-fill" style="width:${dd.tasks&&dd.tasks.total?Math.round(dd.tasks.done/dd.tasks.total*100):0}%;background:${ACCENT_COLOR}"></div></div><div class="cat-val">${dd.tasks?dd.tasks.done+"/"+dd.tasks.total:"—"}</div></div>
       </div>`;
     }
   }
 
   const wDays=md.days.filter(d=>d.water>0);
-  if(wDays.length)catAgg["Water"]={d:wDays.filter(d=>d.water>=WATER_GOAL).length,t:wDays.length,kind:"tracker",color:"#378ADD",label:"days at 2.5L"};
+  if(wDays.length)catAgg["Water"]={d:wDays.filter(d=>d.water>=WATER_GOAL).length,t:wDays.length,kind:"tracker",color:WATER_COLOR,label:"days at 2.5L"};
   const sDays=md.days.filter(d=>d.steps>0);
-  if(sDays.length)catAgg["Steps"]={d:sDays.filter(d=>d.steps>=STEPS_GOAL).length,t:sDays.length,kind:"tracker",color:"#1D9E75",label:"days at 8k"};
+  if(sDays.length)catAgg["Steps"]={d:sDays.filter(d=>d.steps>=STEPS_GOAL).length,t:sDays.length,kind:"tracker",color:STEPS_COLOR,label:"days at 8k"};
   const mDays=md.days.filter(d=>d.meals>0);
   if(mDays.length)catAgg["Meals"]={d:md.days.filter(d=>d.meals>=3).length,t:mDays.length,kind:"tracker",color:"#D4537E",label:"days all 3 logged"};
   const scrDays=md.days.filter(d=>d.screen!==null);
-  if(scrDays.length)catAgg["Doomscroll"]={d:scrDays.filter(d=>d.screen<=SCREEN_LIMIT).length,t:scrDays.length,kind:"tracker",color:"#B07FE0",label:"days under limit"};
+  if(scrDays.length)catAgg["Doomscroll"]={d:scrDays.filter(d=>d.screen<=SCREEN_LIMIT).length,t:scrDays.length,kind:"tracker",color:SCREEN_COLOR,label:"days under limit"};
   const allCats=Object.keys(catAgg).sort((a,b)=>{
     const pa=catAgg[a].t?catAgg[a].d/catAgg[a].t:0,pb=catAgg[b].t?catAgg[b].d/catAgg[b].t:0;
     if(catAgg[a].kind==="tracker"&&catAgg[b].kind!=="tracker")return 1;
@@ -1087,10 +1074,10 @@ function monthHTML(){
   }
 
   html+=`<div class="dash-title" style="margin-top:20px">Daily trends</div>`;
-  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Task completion</div><div class="trend-avg">${taskPct}% avg</div></div>${barChart(md.days.map(d=>d.tasks&&d.tasks.total?Math.round(d.tasks.done/d.tasks.total*100):0),100,"#3ea6ff")}</div>`;
-  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Water (L)</div><div class="trend-avg">goal 2.5L</div></div>${barChart(md.days.map(d=>d.water),WATER_GOAL,"#378ADD")}</div>`;
-  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Steps</div><div class="trend-avg">goal 8k</div></div>${barChart(md.days.map(d=>d.steps),STEPS_GOAL,"#1D9E75")}</div>`;
-  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Doomscroll (min)</div><div class="trend-avg">limit ${SCREEN_LIMIT}m · red = over</div></div>${barChartC(md.days.map(d=>d.screen||0),Math.max(SCREEN_LIMIT*2,...md.days.map(d=>d.screen||0)),v=>v>SCREEN_LIMIT?"#D85A30":"#B07FE0")}</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Task completion</div><div class="trend-avg">${taskPct}% avg</div></div>${barChart(md.days.map(d=>d.tasks&&d.tasks.total?Math.round(d.tasks.done/d.tasks.total*100):0),100,ACCENT_COLOR)}</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Water (L)</div><div class="trend-avg">goal 2.5L</div></div>${barChart(md.days.map(d=>d.water),WATER_GOAL,WATER_COLOR)}</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Steps</div><div class="trend-avg">goal 8k</div></div>${barChart(md.days.map(d=>d.steps),STEPS_GOAL,STEPS_COLOR)}</div>`;
+  html+=`<div class="trend-block"><div class="trend-head"><div class="trend-name">Doomscroll (min)</div><div class="trend-avg">limit ${SCREEN_LIMIT}m · red = over</div></div>${barChartC(md.days.map(d=>d.screen||0),Math.max(SCREEN_LIMIT*2,...md.days.map(d=>d.screen||0)),v=>v>SCREEN_LIMIT?SCREEN_COLOR:SCREEN_TRACK)}</div>`;
   return html;
 }
 
@@ -1109,7 +1096,7 @@ function todoListHTML(key,isToday){
   return arr.map(it=>{
     const overdue=isToday&&it.time&&!it.done&&it.time<cur;
     return `<div class="todo-item${it.done?" done":""}${overdue?" overdue":""}">
-      <div class="chk todo-chk" style="border-color:${it.done?"#3ea6ff":"var(--sub)"};background:${it.done?"#3ea6ff":"transparent"}" onclick="toggleTodo('${key}','${it.id}')">${it.done?ic('check',13):""}</div>
+      <div class="chk todo-chk" style="border-color:${it.done?ACCENT_COLOR:"var(--sub)"};background:${it.done?ACCENT_COLOR:"transparent"}" onclick="toggleTodo('${key}','${it.id}')">${it.done?ic('check',13):""}</div>
       <div class="todo-text${it.done?" done":""}">${esc(it.text)}</div>
       ${it.time?`<span class="todo-time-badge">${ic('clock',11)} ${fmt12(it.time)}</span>`:""}
       <button class="todo-del" onclick="deleteTodo('${key}','${it.id}')" aria-label="Delete">${ic('trash',15)}</button>
@@ -1156,7 +1143,7 @@ function weekPlanHTML(){
   DAYS.forEach((d,i)=>{
     const{done,total}=getDayStats(d.name,d.blocks),pc=Math.round(done/total*100);
     html+=`<div class="week-row${i===tIdx?" today":""}" onclick="activeDayIdx=${i};view='day';render()">
-      <div class="week-day" style="color:${i===tIdx?"#3ea6ff":"var(--text)"}">${d.short}</div>
+      <div class="week-day" style="color:${i===tIdx?ACCENT_COLOR:"var(--text)"}">${d.short}</div>
       <div class="week-meta"><div class="week-theme">${d.theme}</div><div class="week-bar"><div class="week-fill" style="width:${pc}%;background:${d.tc}"></div></div></div>
       <div class="week-count">${done}/${total}</div>
     </div>`;
@@ -1225,7 +1212,7 @@ function render(){
           <div class="chk" style="border-color:${tasks[ti]?col.color:"var(--border)"};background:${tasks[ti]?col.color:"transparent"}">${tasks[ti]?ic('check',13):""}</div>
           <div class="task-text${tasks[ti]?" done":""}">${t}</div>
         </div>`).join("")}
-        ${!b.fixed?`<button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">${ic('timer',14)} Pomodoro for ADHD! Lock-in 25 minutes</button>`:""}
+        ${!b.fixed?`<button class="start-timer-btn" onclick="startTimer('${b.name}','${ACCENT_COLOR}')">${ic('timer',14)} Pomodoro for ADHD! Lock-in 25 minutes</button>`:""}
       </div>`;
       if(curBlockIdx<todayDay.blocks.length-1){
         const nb=todayDay.blocks[curBlockIdx+1];
@@ -1266,11 +1253,11 @@ function render(){
         ${isOpen?`<div class="block-body open">
           ${b.meals&&b.meals.length?foodHTML(b.meals):""}
           ${b.tasks.map((t,ti)=>`<div class="task-row${canEditDay?"":" locked"}"${canEditDay?` onclick="toggle('${day.name}',${bi},${ti})"`:""}>
-            <div class="chk" style="border-color:${tasks[ti]?"#3ea6ff":"var(--border)"};background:${tasks[ti]?"#3ea6ff":"transparent"}">${tasks[ti]?ic('check',13):""}</div>
+            <div class="chk" style="border-color:${tasks[ti]?ACCENT_COLOR:"var(--border)"};background:${tasks[ti]?ACCENT_COLOR:"transparent"}">${tasks[ti]?ic('check',13):""}</div>
             <div class="task-text${tasks[ti]?" done":""}">${t}</div>
           </div>`).join("")}
           ${b.note?`<div class="block-note">${b.note}</div>`:""}
-          ${!b.fixed&&canEditDay?`<button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">${ic('timer',14)} Pomodoro for ADHD! Lock-in 25 minutes</button>`:""}
+          ${!b.fixed&&canEditDay?`<button class="start-timer-btn" onclick="startTimer('${b.name}','${ACCENT_COLOR}')">${ic('timer',14)} Pomodoro for ADHD! Lock-in 25 minutes</button>`:""}
         </div>`:""}
       </div>`;
     });
