@@ -5,7 +5,7 @@ import UserNotifications
 @main
 struct LifeOSApp: App {
     init() {
-        TimerNotification.requestPermission()
+        LifeOSNotifications.requestPermission()
     }
 
     var body: some Scene {
@@ -17,26 +17,34 @@ struct LifeOSApp: App {
     }
 }
 
-private enum TimerNotification {
-    static let id = "lifeos.pomodoro.done"
-
+private enum LifeOSNotifications {
     static func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
     }
+
+    static func notificationContent(title: String, body: String) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        if #available(iOS 15.0, *) {
+            content.interruptionLevel = .timeSensitive
+        }
+        return content
+    }
+}
+
+private enum TimerNotification {
+    static let id = "lifeos.pomodoro.done"
 
     static func schedule(seconds: TimeInterval, label: String) {
         cancel()
         guard seconds > 0 else { return }
 
-        let content = UNMutableNotificationContent()
-        content.title = "Pomodoro done"
-        content.body = label.isEmpty
-            ? "Lock-in complete — take a break."
-            : "\(label) — 25 minutes up."
-        content.sound = .default
-        if #available(iOS 15.0, *) {
-            content.interruptionLevel = .timeSensitive
-        }
+        let content = LifeOSNotifications.notificationContent(
+            title: "Pomodoro done",
+            body: label.isEmpty ? "Lock-in complete — take a break." : "\(label) — 25 minutes up."
+        )
 
         let trigger = UNTimeIntervalNotificationTrigger(
             timeInterval: max(1, seconds),
@@ -52,6 +60,46 @@ private enum TimerNotification {
     }
 }
 
+private enum BlockNotification {
+    static let prefix = "lifeos.block."
+
+    static func cancelAll(completion: (() -> Void)? = nil) {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let ids = requests.map(\.identifier).filter { $0.hasPrefix(prefix) }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+            completion?()
+        }
+    }
+
+    static func schedule(blocks: [[String: Any]]) {
+        cancelAll {
+            let center = UNUserNotificationCenter.current()
+            for block in blocks {
+                guard let id = block["id"] as? String,
+                      let atMs = (block["at"] as? Double) ?? (block["at"] as? Int).map(Double.init),
+                      let title = block["title"] as? String,
+                      let body = block["body"] as? String else { continue }
+
+                let date = Date(timeIntervalSince1970: atMs / 1000.0)
+                guard date.timeIntervalSinceNow > 1 else { continue }
+
+                let content = LifeOSNotifications.notificationContent(title: title, body: body)
+                let comps = Calendar.current.dateComponents(
+                    [.year, .month, .day, .hour, .minute, .second],
+                    from: date
+                )
+                let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+                let request = UNNotificationRequest(
+                    identifier: prefix + id,
+                    content: content,
+                    trigger: trigger
+                )
+                center.add(request)
+            }
+        }
+    }
+}
+
 struct WebView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -62,6 +110,7 @@ struct WebView: UIViewRepresentable {
         config.websiteDataStore = .default()
         config.userContentController.add(context.coordinator, name: "haptic")
         config.userContentController.add(context.coordinator, name: "timer")
+        config.userContentController.add(context.coordinator, name: "blocks")
 
         UNUserNotificationCenter.current().delegate = context.coordinator
 
@@ -87,7 +136,7 @@ struct WebView: UIViewRepresentable {
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             switch message.name {
             case "haptic":
-                DispatchQueue.main.async { Self.playTimerDoneHaptic() }
+                DispatchQueue.main.async { Self.playNotificationHaptic() }
             case "timer":
                 guard let body = message.body as? [String: Any],
                       let action = body["action"] as? String else { return }
@@ -95,10 +144,24 @@ struct WebView: UIViewRepresentable {
                 let label = body["label"] as? String ?? "Pomodoro"
                 switch action {
                 case "schedule":
-                    TimerNotification.requestPermission()
+                    LifeOSNotifications.requestPermission()
                     TimerNotification.schedule(seconds: seconds, label: label)
                 case "cancel", "stop":
                     TimerNotification.cancel()
+                default:
+                    break
+                }
+            case "blocks":
+                guard let body = message.body as? [String: Any],
+                      let action = body["action"] as? String else { return }
+                switch action {
+                case "schedule":
+                    LifeOSNotifications.requestPermission()
+                    if let blocks = body["blocks"] as? [[String: Any]] {
+                        BlockNotification.schedule(blocks: blocks)
+                    }
+                case "cancel":
+                    BlockNotification.cancelAll()
                 default:
                     break
                 }
@@ -112,8 +175,10 @@ struct WebView: UIViewRepresentable {
             willPresent notification: UNNotification,
             withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
         ) {
-            Self.playTimerDoneHaptic()
-            TimerNotification.cancel()
+            Self.playNotificationHaptic()
+            if notification.request.identifier == TimerNotification.id {
+                TimerNotification.cancel()
+            }
             completionHandler([.banner, .sound])
         }
 
@@ -122,11 +187,11 @@ struct WebView: UIViewRepresentable {
             didReceive response: UNNotificationResponse,
             withCompletionHandler completionHandler: @escaping () -> Void
         ) {
-            Self.playTimerDoneHaptic()
+            Self.playNotificationHaptic()
             completionHandler()
         }
 
-        private static func playTimerDoneHaptic() {
+        private static func playNotificationHaptic() {
             let note = UINotificationFeedbackGenerator()
             note.prepare()
             note.notificationOccurred(.success)

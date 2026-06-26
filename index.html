@@ -577,12 +577,41 @@ function tickTimer(){
   renderTimer();
 }
 function onTimerVisibility(){
-  if(document.visibilityState!=="visible"||!timerRunning||!timerEndAt)return;
+  if(document.visibilityState!=="visible")return;
+  syncBlockNotifications();
+  if(!timerRunning||!timerEndAt)return;
   const left=Math.max(0,Math.ceil((timerEndAt-Date.now())/1000));
   if(left<=0)finishTimer(true);
   else{timerSec=left;renderTimer();}
 }
 document.addEventListener("visibilitychange",onTimerVisibility);
+function blockNotifBody(b){
+  const head=`${b.name} · ${fmtH(b.st)}–${fmtH(b.en)}`;
+  const lines=(b.tasks||[]).slice(0,3).map(t=>"• "+t);
+  let body=lines.length?head+"\n"+lines.join("\n"):head;
+  return body.length>280?body.slice(0,277)+"...":body;
+}
+function blockStartMsOnDate(h,baseDate){
+  const d=new Date(baseDate);
+  d.setHours(Math.floor(h),Math.round((h%1)*60),0,0);
+  return d.getTime();
+}
+function syncBlockNotifications(){
+  try{
+    const nowMs=Date.now(),blocks=[];
+    for(let offset=0;offset<=1;offset++){
+      const d=new Date();
+      d.setDate(d.getDate()+offset);
+      const dayIdx=(todayIdx()+offset)%7;
+      const key=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+      DAYS[dayIdx].blocks.forEach((b,i)=>{
+        const at=blockStartMsOnDate(b.st,d);
+        if(at>nowMs)blocks.push({id:`${key}-${i}`,at,title:"Do this now",body:blockNotifBody(b)});
+      });
+    }
+    window.webkit?.messageHandlers?.blocks?.postMessage({action:"schedule",blocks});
+  }catch(e){}
+}
 function startTimer(label,color,mins=25){
   if(timerInterval)clearInterval(timerInterval);
   timerSec=mins*60;timerTotal=mins*60;timerLabel=label;timerColor=color;timerRunning=true;
@@ -1186,6 +1215,7 @@ function render(){
 
   document.getElementById("app").innerHTML=html;
   renderTimer();
+  syncBlockNotifications();
 }
 
 setInterval(()=>{const el=document.getElementById("clk");if(el)el.textContent=fmtClock();},1000);
