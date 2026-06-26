@@ -296,7 +296,9 @@
 <body>
 <div id="app"></div>
 <script>
-const APP_BUILD="250625e";
+const APP_BUILD="250625f";
+const HEALTH_SHORTCUT_NAME="Life OS Steps";
+const HEALTH_AUTO_KEY="health_auto_shortcut";
 const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9awg--qBIYriCFinVSM8KJj_wbx0yw/viewform?usp=pp_url&entry.1213268056=";
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
@@ -551,7 +553,23 @@ let stepsInput=stepsVal||"";
 let screenVal=loadScreen();
 let screenInput=screenVal||"";
 const HEALTH_NATIVE=!!(typeof window!=="undefined"&&window.webkit?.messageHandlers?.health);
-let lastHealthSync=0,healthSyncBooted=false,healthSyncState="",healthHelpOpen=false,healthSyncTimeout=0;
+let lastHealthSync=0,healthSyncBooted=false,healthSyncState="",healthHelpOpen=false,healthSyncTimeout=0,lastShortcutRun=0;
+function healthAutoEnabled(){try{return localStorage.getItem(HEALTH_AUTO_KEY)!=="0";}catch(e){return true;}}
+function setHealthAuto(on){try{localStorage.setItem(HEALTH_AUTO_KEY,on?"1":"0");}catch(e){}render();}
+function runHealthShortcut(){
+  if(!HEALTH_NATIVE)return;
+  healthSyncState="syncing";
+  render();
+  try{window.webkit.messageHandlers.shortcut.postMessage({name:HEALTH_SHORTCUT_NAME});}
+  catch(e){try{window.location.href="shortcuts://run-shortcut?name="+encodeURIComponent(HEALTH_SHORTCUT_NAME);}catch(e2){healthSyncState="error";render();}}
+}
+function maybeAutoHealthShortcut(){
+  if(!HEALTH_NATIVE||!healthAutoEnabled())return;
+  const now=Date.now();
+  if(now-lastShortcutRun<120000)return;
+  lastShortcutRun=now;
+  setTimeout(runHealthShortcut,600);
+}
 let _je=getJournal(todayKey())||{};
 let journalMood=_je.mood||null;
 let journalText=_je.text||"";
@@ -692,13 +710,11 @@ function syncHealthSteps(force){
 }
 function healthHelpHTML(){
   return `<div class="steps-help">
-    <strong>Sideloaded apps can't access Health directly.</strong> Apple only grants HealthKit to App Store or paid developer builds — so Life OS won't appear under Health settings.
+    <strong>Steps sync via Shortcuts</strong> (required for sideloaded apps)
     <ol>
-      <li>Open the <strong>Shortcuts</strong> app → tap <strong>+</strong> → name it "Life OS Steps"</li>
-      <li>Add <strong>Find Health Samples</strong> → Type: Step Count → Date: Today → tap the (i) → turn on <strong>Include Grouping</strong> if shown, or use Sum</li>
-      <li>Add <strong>Find Health Samples</strong> again → Step Count → Date: Yesterday</li>
-      <li>Add <strong>URL</strong> → set to: <strong>lifeos://health?today=[Steps from step 2]&amp;yesterday=[Steps from step 3]</strong> (pick the magic variables from the list)</li>
-      <li>Run the shortcut — it opens Life OS with your steps filled in</li>
+      <li>Shortcut name must be exactly <strong>Life OS Steps</strong></li>
+      <li>Turn on <strong>Auto-sync on open</strong> below — runs your shortcut when Life OS opens</li>
+      <li>Optional: Shortcuts app → <strong>Automation</strong> tab → <strong>+</strong> → <strong>Time of Day</strong> (e.g. 8 AM) → Run <strong>Life OS Steps</strong> → turn off <strong>Ask Before Running</strong></li>
     </ol>
   </div>`;
 }
@@ -768,9 +784,10 @@ function stepsHTML(){
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <input class="steps-input" type="number" placeholder="Enter steps..." value="${stepsInput}" id="steps-inp" onchange="stepsInput=this.value" oninput="stepsInput=this.value" onkeydown="if(event.key==='Enter')saveStepsInput()"/>
-      ${HEALTH_NATIVE?`<button class="steps-shortcut" onclick="toggleHealthHelp()" title="Sync steps via Shortcuts">?</button>`:""}
+      ${HEALTH_NATIVE?`<button class="steps-health" onclick="runHealthShortcut()">${ic('footprints',14,'#2ba870')} Sync</button><button class="steps-shortcut" onclick="toggleHealthHelp()" title="Shortcuts help">?</button>`:""}
       <button class="steps-save" onclick="saveStepsInput()">Save</button>
     </div>
+    ${HEALTH_NATIVE?`<label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:var(--fs-sub);color:var(--sub);cursor:pointer"><input type="checkbox"${healthAutoEnabled()?" checked":""} onchange="setHealthAuto(this.checked)" style="accent-color:#2ba870;width:16px;height:16px"/> Auto-sync on open (via Shortcuts)</label>`:""}
     ${HEALTH_NATIVE&&healthHelpOpen?healthHelpHTML():""}
     <div class="steps-bar"><div class="steps-fill" style="width:${pct}%"></div></div>
   </div>`;
@@ -1287,7 +1304,11 @@ function render(){
   document.getElementById("app").innerHTML=html;
   renderTimer();
   syncBlockNotifications();
-  if(HEALTH_NATIVE&&!healthSyncBooted){healthSyncBooted=true;healthHelpOpen=true;}
+  if(HEALTH_NATIVE&&!healthSyncBooted){
+    healthSyncBooted=true;
+    if(localStorage.getItem(HEALTH_AUTO_KEY)===null)try{localStorage.setItem(HEALTH_AUTO_KEY,"1");}catch(e){}
+    setTimeout(maybeAutoHealthShortcut,1200);
+  }
 }
 
 setInterval(()=>{const el=document.getElementById("clk");if(el)el.textContent=fmtClock();},1000);
@@ -1319,7 +1340,7 @@ render();
 if(SYNC_ON){
   syncFromRemote();
   setInterval(syncFromRemote,20000);
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncFromRemote();});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){syncFromRemote();maybeAutoHealthShortcut();}});
 }
 </script>
 </body>

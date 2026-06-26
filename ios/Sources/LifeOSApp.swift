@@ -115,6 +115,7 @@ struct WebView: UIViewRepresentable {
         config.userContentController.add(context.coordinator, name: "timer")
         config.userContentController.add(context.coordinator, name: "blocks")
         config.userContentController.add(context.coordinator, name: "health")
+        config.userContentController.add(context.coordinator, name: "shortcut")
 
         UNUserNotificationCenter.current().delegate = context.coordinator
 
@@ -200,6 +201,20 @@ struct WebView: UIViewRepresentable {
                         }
                     }
                 }
+            case "shortcut":
+                let name: String
+                if let body = message.body as? [String: Any], let n = body["name"] as? String {
+                    name = n
+                } else if let n = message.body as? String {
+                    name = n
+                } else {
+                    return
+                }
+                guard let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let url = URL(string: "shortcuts://run-shortcut?name=\(encoded)") else { return }
+                DispatchQueue.main.async {
+                    UIApplication.shared.open(url)
+                }
             default:
                 break
             }
@@ -252,11 +267,18 @@ struct WebView: UIViewRepresentable {
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
             if let url = navigationAction.request.url,
-               navigationAction.navigationType == .linkActivated,
-               let scheme = url.scheme, scheme == "http" || scheme == "https" {
-                UIApplication.shared.open(url)
-                decisionHandler(.cancel)
-                return
+               let scheme = url.scheme?.lowercased() {
+                if scheme == "http" || scheme == "https" {
+                    if navigationAction.navigationType == .linkActivated {
+                        UIApplication.shared.open(url)
+                        decisionHandler(.cancel)
+                        return
+                    }
+                } else if scheme == "shortcuts" {
+                    UIApplication.shared.open(url)
+                    decisionHandler(.cancel)
+                    return
+                }
             }
             decisionHandler(.allow)
         }
