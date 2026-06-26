@@ -154,6 +154,12 @@
   .steps-save{padding:10px 16px;border-radius:100px;border:none;background:#2ba870;color:#0f0f0f;font-size:var(--fs-btn);font-weight:500}
   .steps-health{padding:10px 14px;border-radius:100px;border:none;background:var(--bg4);color:var(--text);font-size:var(--fs-btn);font-weight:500;white-space:nowrap;flex-shrink:0}
   .steps-health:active{opacity:.75}
+  .steps-shortcut{padding:10px 14px;border-radius:100px;border:none;background:#1a3a2a;color:#5dcaa5;font-size:var(--fs-btn);font-weight:500;white-space:nowrap;flex-shrink:0}
+  .steps-shortcut:active{opacity:.75}
+  .steps-help{margin-top:10px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--bg3);font-size:var(--fs-sub);color:var(--sub);line-height:1.5}
+  .steps-help strong{color:var(--text);font-weight:500}
+  .steps-help ol{margin:8px 0 0 18px;padding:0}
+  .steps-help li{margin-bottom:6px}
   .steps-bar{height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-top:10px}
   .steps-fill{height:4px;background:#2ba870;border-radius:100px;transition:width .4s}
 
@@ -290,7 +296,7 @@
 <body>
 <div id="app"></div>
 <script>
-const APP_BUILD="250625d";
+const APP_BUILD="250625e";
 const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9awg--qBIYriCFinVSM8KJj_wbx0yw/viewform?usp=pp_url&entry.1213268056=";
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
@@ -545,7 +551,7 @@ let stepsInput=stepsVal||"";
 let screenVal=loadScreen();
 let screenInput=screenVal||"";
 const HEALTH_NATIVE=!!(typeof window!=="undefined"&&window.webkit?.messageHandlers?.health);
-let lastHealthSync=0,healthSyncBooted=false,healthSyncState="";
+let lastHealthSync=0,healthSyncBooted=false,healthSyncState="",healthHelpOpen=false,healthSyncTimeout=0;
 let _je=getJournal(todayKey())||{};
 let journalMood=_je.mood||null;
 let journalText=_je.text||"";
@@ -663,20 +669,38 @@ function saveStepsInput(){stepsVal=parseInt(stepsInput)||0;saveSteps(stepsVal);h
 function saveScreenInput(){screenVal=parseInt(screenInput)||0;saveScreen(screenVal);render();}
 window.onHealthSteps=function(p){
   if(!p)return;
-  healthSyncState="ok";
+  clearTimeout(healthSyncTimeout);
+  healthSyncState=p?.source==="shortcut"?"shortcut-ok":"ok";
   if(p.days)mergeHealthSteps(p.days);
   else if(typeof p.steps==="number"){stepsVal=Math.max(0,Math.round(p.steps));stepsInput=String(stepsVal);saveSteps(stepsVal);}
   render();
 };
-window.onHealthStepsError=function(p){healthSyncState=p?.code||"error";render();};
+window.onHealthStepsError=function(p){clearTimeout(healthSyncTimeout);healthSyncState=p?.code||"error";render();};
+function toggleHealthHelp(){healthHelpOpen=!healthHelpOpen;render();}
 function syncHealthSteps(force){
   if(!HEALTH_NATIVE)return;
   const now=Date.now();
   if(!force&&now-lastHealthSync<30000)return;
   lastHealthSync=now;
   healthSyncState="syncing";
+  clearTimeout(healthSyncTimeout);
   render();
-  try{window.webkit.messageHandlers.health.postMessage({action:"sync"});}catch(e){healthSyncState="error";render();}
+  healthSyncTimeout=setTimeout(()=>{
+    if(healthSyncState==="syncing"){healthSyncState="sideload";healthHelpOpen=true;render();}
+  },3500);
+  try{window.webkit.messageHandlers.health.postMessage({action:"sync"});}catch(e){clearTimeout(healthSyncTimeout);healthSyncState="sideload";healthHelpOpen=true;render();}
+}
+function healthHelpHTML(){
+  return `<div class="steps-help">
+    <strong>Sideloaded apps can't access Health directly.</strong> Apple only grants HealthKit to App Store or paid developer builds — so Life OS won't appear under Health settings.
+    <ol>
+      <li>Open the <strong>Shortcuts</strong> app → tap <strong>+</strong> → name it "Life OS Steps"</li>
+      <li>Add <strong>Find Health Samples</strong> → Type: Step Count → Date: Today → tap the (i) → turn on <strong>Include Grouping</strong> if shown, or use Sum</li>
+      <li>Add <strong>Find Health Samples</strong> again → Step Count → Date: Yesterday</li>
+      <li>Add <strong>URL</strong> → set to: <strong>lifeos://health?today=[Steps from step 2]&amp;yesterday=[Steps from step 3]</strong> (pick the magic variables from the list)</li>
+      <li>Run the shortcut — it opens Life OS with your steps filled in</li>
+    </ol>
+  </div>`;
 }
 function setMood(m){journalMood=m;render();}
 function saveJournalEntry(){saveJournal(journalMood,journalText);render();}
@@ -728,12 +752,13 @@ function stepsHTML(){
   const healthHint=HEALTH_NATIVE?(
     healthSyncState==="syncing"?" · syncing…":
     healthSyncState==="ok"?" · from Apple Health":
+    healthSyncState==="shortcut-ok"?" · from Shortcuts":
+    healthSyncState==="sideload"?" · use Shortcuts to sync (tap ?)":
     healthSyncState==="denied"?" · Health access denied":
     healthSyncState==="unavailable"?" · Health unavailable on this device":
-    healthSyncState==="query"?" · couldn't read steps — check Health permissions":
-    healthSyncState==="error"||healthSyncState==="encode"?" · sync failed — try again":
-    healthSyncState?" · "+healthSyncState:
-    " · tap Health to sync"
+    healthSyncState==="query"?" · couldn't read steps":
+    healthSyncState==="error"||healthSyncState==="encode"?" · sync failed":
+    " · tap ? for Shortcuts sync"
   ):"";
   if(goalMet&&!secOpen.steps)return collapsedTrack('steps','footprints','#1D9E75','Steps today',stepsVal.toLocaleString());
   return `<div class="steps-section">
@@ -743,9 +768,10 @@ function stepsHTML(){
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <input class="steps-input" type="number" placeholder="Enter steps..." value="${stepsInput}" id="steps-inp" onchange="stepsInput=this.value" oninput="stepsInput=this.value" onkeydown="if(event.key==='Enter')saveStepsInput()"/>
-      ${HEALTH_NATIVE?`<button class="steps-health" onclick="syncHealthSteps(true)">${ic('footprints',14,'#2ba870')} Health</button>`:""}
+      ${HEALTH_NATIVE?`<button class="steps-shortcut" onclick="toggleHealthHelp()" title="Sync steps via Shortcuts">?</button>`:""}
       <button class="steps-save" onclick="saveStepsInput()">Save</button>
     </div>
+    ${HEALTH_NATIVE&&healthHelpOpen?healthHelpHTML():""}
     <div class="steps-bar"><div class="steps-fill" style="width:${pct}%"></div></div>
   </div>`;
 }
@@ -1261,7 +1287,7 @@ function render(){
   document.getElementById("app").innerHTML=html;
   renderTimer();
   syncBlockNotifications();
-  if(HEALTH_NATIVE&&!healthSyncBooted){healthSyncBooted=true;setTimeout(()=>syncHealthSteps(true),500);}
+  if(HEALTH_NATIVE&&!healthSyncBooted){healthSyncBooted=true;healthHelpOpen=true;}
 }
 
 setInterval(()=>{const el=document.getElementById("clk");if(el)el.textContent=fmtClock();},1000);

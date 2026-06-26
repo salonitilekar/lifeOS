@@ -13,6 +13,9 @@ struct LifeOSApp: App {
             WebView()
                 .ignoresSafeArea()
                 .preferredColorScheme(.dark)
+                .onOpenURL { url in
+                    _ = HealthURLHandler.handle(url)
+                }
         }
     }
 }
@@ -117,6 +120,7 @@ struct WebView: UIViewRepresentable {
 
         let webView = WKWebView(frame: .zero, configuration: config)
         context.coordinator.webView = webView
+        WebViewBridge.shared.attach(webView)
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.scrollView.contentInsetAdjustmentBehavior = .never
@@ -236,6 +240,10 @@ struct WebView: UIViewRepresentable {
                 heavy.prepare()
                 heavy.impactOccurred()
             }
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            WebViewBridge.shared.attach(webView)
         }
 
         func webView(

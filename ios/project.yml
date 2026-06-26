@@ -20,6 +20,10 @@ targets:
         UIViewControllerBasedStatusBarAppearance: false
         ITSAppUsesNonExemptEncryption: false
         NSHealthShareUsageDescription: "Life OS reads your step count from Apple Health to track your daily movement goal."
+        CFBundleURLTypes:
+          - CFBundleURLName: com.saloni.lifeos
+            CFBundleURLSchemes:
+              - lifeos
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         UISupportedInterfaceOrientations~ipad:
