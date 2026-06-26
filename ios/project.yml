@@ -13,12 +13,13 @@ targets:
       properties:
         CFBundleDisplayName: Life OS
         CFBundleName: LifeOS
-        CFBundleShortVersionString: "1.1"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "1.2"
+        CFBundleVersion: "3"
         UILaunchScreen: {}
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UIViewControllerBasedStatusBarAppearance: false
         ITSAppUsesNonExemptEncryption: false
+        NSHealthShareUsageDescription: "Life OS reads your step count from Apple Health to track your daily movement goal."
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         UISupportedInterfaceOrientations~ipad:
@@ -32,12 +33,15 @@ targets:
       - path: www
         type: folder
         buildPhase: resources
+    entitlements:
+      properties:
+        com.apple.developer.healthkit: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.saloni.lifeos
         PRODUCT_NAME: LifeOS
-        MARKETING_VERSION: "1.1"
-        CURRENT_PROJECT_VERSION: "2"
+        MARKETING_VERSION: "1.2"
+        CURRENT_PROJECT_VERSION: "3"
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.0"
         CODE_SIGN_STYLE: Manual

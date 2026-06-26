@@ -111,10 +111,12 @@ struct WebView: UIViewRepresentable {
         config.userContentController.add(context.coordinator, name: "haptic")
         config.userContentController.add(context.coordinator, name: "timer")
         config.userContentController.add(context.coordinator, name: "blocks")
+        config.userContentController.add(context.coordinator, name: "health")
 
         UNUserNotificationCenter.current().delegate = context.coordinator
 
         let webView = WKWebView(frame: .zero, configuration: config)
+        context.coordinator.webView = webView
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.scrollView.contentInsetAdjustmentBehavior = .never
@@ -133,6 +135,8 @@ struct WebView: UIViewRepresentable {
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UNUserNotificationCenterDelegate {
+        weak var webView: WKWebView?
+
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             switch message.name {
             case "haptic":
@@ -164,6 +168,25 @@ struct WebView: UIViewRepresentable {
                     BlockNotification.cancelAll()
                 default:
                     break
+                }
+            case "health":
+                guard let body = message.body as? [String: Any],
+                      let action = body["action"] as? String,
+                      action == "sync" else { return }
+                HealthKitManager.syncTodaySteps { result in
+                    DispatchQueue.main.async { [weak self] in
+                        let target = message.webView ?? self?.webView
+                        switch result {
+                        case .success(let steps):
+                            target?.evaluateJavaScript(
+                                "window.onHealthSteps&&window.onHealthSteps({steps:\(steps)})"
+                            )
+                        case .failure(let code):
+                            target?.evaluateJavaScript(
+                                "window.onHealthStepsError&&window.onHealthStepsError({code:'\(code)'})"
+                            )
+                        }
+                    }
                 }
             default:
                 break

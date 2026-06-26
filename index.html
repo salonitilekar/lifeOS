@@ -152,6 +152,8 @@
   .steps-input{flex:1;background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 12px;font-family:var(--font)}
   .steps-input:focus{outline:none;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
   .steps-save{padding:10px 16px;border-radius:100px;border:none;background:#2ba870;color:#0f0f0f;font-size:var(--fs-btn);font-weight:500}
+  .steps-health{padding:10px 14px;border-radius:100px;border:none;background:var(--bg4);color:var(--text);font-size:var(--fs-btn);font-weight:500;white-space:nowrap;flex-shrink:0}
+  .steps-health:active{opacity:.75}
   .steps-bar{height:4px;background:var(--bg3);border-radius:100px;overflow:hidden;margin-top:10px}
   .steps-fill{height:4px;background:#2ba870;border-radius:100px;transition:width .4s}
 
@@ -288,7 +290,7 @@
 <body>
 <div id="app"></div>
 <script>
-const APP_BUILD="250625b";
+const APP_BUILD="250625c";
 const FORM_BASE="https://docs.google.com/forms/d/e/1FAIpQLSfXgIXoRuEOnSimgAsG9awg--qBIYriCFinVSM8KJj_wbx0yw/viewform?usp=pp_url&entry.1213268056=";
 const WATER_LEVELS=[0,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 const WATER_GOAL=2.5;
@@ -531,6 +533,8 @@ let stepsVal=loadSteps();
 let stepsInput=stepsVal||"";
 let screenVal=loadScreen();
 let screenInput=screenVal||"";
+const HEALTH_NATIVE=!!(typeof window!=="undefined"&&window.webkit?.messageHandlers?.health);
+let lastHealthSync=0,healthSyncBooted=false,healthSyncState="";
 let _je=getJournal(todayKey())||{};
 let journalMood=_je.mood||null;
 let journalText=_je.text||"";
@@ -580,6 +584,7 @@ function tickTimer(){
 function onTimerVisibility(){
   if(document.visibilityState!=="visible")return;
   syncBlockNotifications();
+  syncHealthSteps();
   if(!timerRunning||!timerEndAt)return;
   const left=Math.max(0,Math.ceil((timerEndAt-Date.now())/1000));
   if(left<=0)finishTimer(true);
@@ -643,8 +648,25 @@ function toggle(dayName,bi,ti){
   state[dayName][bi][ti]=!state[dayName][bi][ti];saveState(state);render();
 }
 function setWater(idx){waterLevel=WATER_LEVELS[idx];saveWater(waterLevel);render();}
-function saveStepsInput(){stepsVal=parseInt(stepsInput)||0;saveSteps(stepsVal);render();}
+function saveStepsInput(){stepsVal=parseInt(stepsInput)||0;saveSteps(stepsVal);healthSyncState="";render();}
 function saveScreenInput(){screenVal=parseInt(screenInput)||0;saveScreen(screenVal);render();}
+window.onHealthSteps=function(p){
+  if(!p||typeof p.steps!=="number")return;
+  healthSyncState="ok";
+  const s=Math.max(0,Math.round(p.steps));
+  stepsVal=s;stepsInput=String(s);
+  saveSteps(stepsVal);
+  render();
+};
+window.onHealthStepsError=function(p){healthSyncState=p?.code||"error";render();};
+function syncHealthSteps(force){
+  if(!HEALTH_NATIVE)return;
+  const now=Date.now();
+  if(!force&&now-lastHealthSync<30000)return;
+  lastHealthSync=now;
+  healthSyncState="syncing";
+  try{window.webkit.messageHandlers.health.postMessage({action:"sync"});}catch(e){healthSyncState="error";}
+}
 function setMood(m){journalMood=m;render();}
 function saveJournalEntry(){saveJournal(journalMood,journalText);render();}
 
@@ -692,14 +714,16 @@ function waterHTML(){
 function stepsHTML(){
   const pct=Math.min(100,Math.round((stepsVal/STEPS_GOAL)*100));
   const goalMet=stepsVal>=STEPS_GOAL;
+  const healthHint=HEALTH_NATIVE?(healthSyncState==="denied"?" · Health access denied":healthSyncState==="syncing"?" · syncing…":healthSyncState==="ok"?" · from Apple Health":" · Apple Health"):"";
   if(goalMet&&!secOpen.steps)return collapsedTrack('steps','footprints','#1D9E75','Steps today',stepsVal.toLocaleString());
   return `<div class="steps-section">
     <div class="steps-header"${goalMet?` style="cursor:pointer" onclick="toggleSec('steps')"`:""}>
-      <div><div class="steps-title">${ic('footprints',15,'#1D9E75')} Steps today</div><div style="font-size:var(--fs-sub);color:var(--sub)">Goal: 8,000 steps</div></div>
+      <div><div class="steps-title">${ic('footprints',15,'#1D9E75')} Steps today</div><div style="font-size:var(--fs-sub);color:var(--sub)">Goal: 8,000 steps${healthHint}</div></div>
       <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="steps-val">${stepsVal.toLocaleString()}</div><div style="font-size:var(--fs-sub);color:var(--sub)">${pct}% of goal</div></div>${goalMet?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <input class="steps-input" type="number" placeholder="Enter steps..." value="${stepsInput}" id="steps-inp" onchange="stepsInput=this.value" oninput="stepsInput=this.value" onkeydown="if(event.key==='Enter')saveStepsInput()"/>
+      ${HEALTH_NATIVE?`<button class="steps-health" onclick="syncHealthSteps(true)">${ic('footprints',14,'#2ba870')} Health</button>`:""}
       <button class="steps-save" onclick="saveStepsInput()">Save</button>
     </div>
     <div class="steps-bar"><div class="steps-fill" style="width:${pct}%"></div></div>
@@ -1217,6 +1241,7 @@ function render(){
   document.getElementById("app").innerHTML=html;
   renderTimer();
   syncBlockNotifications();
+  if(HEALTH_NATIVE&&!healthSyncBooted){healthSyncBooted=true;setTimeout(()=>syncHealthSteps(true),500);}
 }
 
 setInterval(()=>{const el=document.getElementById("clk");if(el)el.textContent=fmtClock();},1000);
