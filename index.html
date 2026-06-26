@@ -77,7 +77,7 @@
   .chk{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:var(--fs-sub);color:#fff;transition:all .15s}
   .task-text{font-size:var(--fs-major);font-weight:400;line-height:1.43;color:var(--text)}
   .task-text.done{text-decoration:line-through;opacity:.4}
-  .start-timer-btn{margin-top:14px;font-size:var(--fs-btn);padding:9px 18px;border-radius:100px;border:none;color:#fff;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+  .start-timer-btn{margin-top:14px;font-size:var(--fs-btn);padding:10px 16px;border-radius:100px;border:none;color:#fff;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%}
   .next-block{background:var(--bg2);border-radius:var(--radius-lg);padding:14px 16px;border:none;margin-bottom:10px}
   .next-label{font-size:var(--fs-sub);color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
   .next-name{font-size:var(--fs-major);font-weight:500}
@@ -213,14 +213,15 @@
   .cal-wrap.plan .cal-cell.today{box-shadow:inset 0 0 0 2px #3ea6ff;font-weight:500}
   .cal-todo-badge{position:absolute;top:3px;right:3px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:#3ea6ff;color:#0f0f0f;font-size:var(--fs-sub);font-weight:600;display:flex;align-items:center;justify-content:center;line-height:1}
   .todo-card{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;border:none}
-  .todo-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .todo-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+  .todo-card-head-left{display:flex;align-items:center;gap:8px;min-width:0}
   .todo-card-title{font-size:var(--fs-major);font-weight:500;color:var(--text);display:inline-flex;align-items:center;gap:7px}
   .todo-count{font-size:var(--fs-title);color:var(--sub);background:var(--bg3);padding:2px 9px;border-radius:100px;flex-shrink:0;font-weight:400}
-  .todo-add{display:flex;gap:7px;margin-bottom:4px}
+  .todo-add{display:flex;gap:7px;margin-bottom:10px}
   .todo-input{flex:1;min-width:0;background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 12px;font-family:var(--font)}
   .todo-input:focus{outline:none;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
   .todo-time{background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 8px;font-family:var(--font);width:auto;flex-shrink:0}
-  .todo-add-btn{flex-shrink:0;width:40px;border-radius:50%;border:none;background:#3ea6ff;color:#0f0f0f;display:inline-flex;align-items:center;justify-content:center}
+  .todo-add-btn{flex-shrink:0;width:36px;height:36px;border-radius:10px;border:none;background:#3ea6ff;color:#0f0f0f;display:inline-flex;align-items:center;justify-content:center}
   .todo-add-btn:active{opacity:.8}
   .todo-list{margin-top:6px}
   .todo-item{display:flex;align-items:center;gap:10px;padding:10px 2px;border-top:1px solid var(--border)}
@@ -446,7 +447,7 @@ function getTodos(key){return loadTodosAll()[key]||[];}
 function addTodo(key,text,time){const t=(text||"").trim();if(!t)return false;const d=loadTodosAll(),arr=d[key]||[];arr.push({id:"t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),text:t,time:time||"",done:false,ts:Date.now()});d[key]=arr;saveTodosAll(d);return true;}
 function toggleTodo(key,id){const d=loadTodosAll(),arr=d[key]||[],it=arr.find(x=>x.id===id);if(it)it.done=!it.done;d[key]=arr;saveTodosAll(d);render();}
 function deleteTodo(key,id){const d=loadTodosAll();let arr=(d[key]||[]).filter(x=>x.id!==id);if(arr.length)d[key]=arr;else delete d[key];saveTodosAll(d);render();}
-function submitTodo(key){if(addTodo(key,todoText,todoTime)){todoText="";todoTime="";}render();setTimeout(()=>{const el=document.getElementById("todoInput");if(el)el.focus();},0);}
+function submitTodo(key){if(addTodo(key,todoText,todoTime)){todoText="";todoTime="";todoAddOpen=false;}render();setTimeout(()=>{const el=document.getElementById("todoInput");if(el)el.focus();},0);}
 function nowHM(){const n=new Date();return String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");}
 function fmt12(hm){if(!hm)return"";const p=hm.split(":").map(Number);const ap=p[0]>=12?"PM":"AM",hh=p[0]%12||12;return `${hh}:${String(p[1]).padStart(2,"0")} ${ap}`;}
 function sortTodos(arr){return arr.slice().sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;const at=a.time||"99:99",bt=b.time||"99:99";if(at!==bt)return at<bt?-1:1;return a.ts-b.ts;});}
@@ -520,7 +521,7 @@ let view="now";
 const VIEWS=["now","day","journal","month","dash"];
 let secOpen={};
 function toggleSec(key){secOpen[key]=!secOpen[key];render();}
-let timerSec=0,timerTotal=0,timerLabel="",timerColor="#7F77DD",timerRunning=false,timerInterval=null;
+let timerSec=0,timerTotal=0,timerLabel="",timerColor="#7F77DD",timerRunning=false,timerInterval=null,timerEndAt=0;
 let openBlocks={};
 let showRescue=false;
 let showInstall=!localStorage.getItem("install_dismissed");
@@ -535,7 +536,7 @@ let journalText=_je.text||"";
 let statsTab="week";
 let monthOffset=0;
 let selMonthKey=null;
-let todoText="",todoTime="";
+let todoText="",todoTime="",todoAddOpen=false;
 let calMonthOffset=0;
 let calSelKey=todayKey();
 
@@ -547,14 +548,64 @@ function getDayStats(dayName,blocks){
   return {done,total};
 }
 
+function syncNativeTimer(action){
+  try{
+    let seconds=0;
+    if(action==="schedule"){
+      seconds=timerRunning&&timerEndAt
+        ?Math.max(1,Math.ceil((timerEndAt-Date.now())/1000))
+        :Math.max(1,timerSec);
+    }
+    window.webkit?.messageHandlers?.timer?.postMessage({action,seconds,label:timerLabel||"Pomodoro"});
+  }catch(e){}
+}
+function timerDoneFeedback(){
+  try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([400,120,400,120,600]);}catch(e){}
+  try{window.webkit?.messageHandlers?.haptic?.postMessage("timerDone");}catch(e){}
+}
+function finishTimer(skipFeedback){
+  timerSec=0;timerRunning=false;timerEndAt=0;
+  clearInterval(timerInterval);
+  syncNativeTimer("stop");
+  if(!skipFeedback)timerDoneFeedback();
+  renderTimer();
+}
+function tickTimer(){
+  if(!timerRunning||!timerEndAt)return;
+  timerSec=Math.max(0,Math.ceil((timerEndAt-Date.now())/1000));
+  if(timerSec<=0){finishTimer(false);return;}
+  renderTimer();
+}
+function onTimerVisibility(){
+  if(document.visibilityState!=="visible"||!timerRunning||!timerEndAt)return;
+  const left=Math.max(0,Math.ceil((timerEndAt-Date.now())/1000));
+  if(left<=0)finishTimer(true);
+  else{timerSec=left;renderTimer();}
+}
+document.addEventListener("visibilitychange",onTimerVisibility);
 function startTimer(label,color,mins=25){
   if(timerInterval)clearInterval(timerInterval);
   timerSec=mins*60;timerTotal=mins*60;timerLabel=label;timerColor=color;timerRunning=true;
-  timerInterval=setInterval(()=>{if(!timerRunning)return;timerSec--;if(timerSec<=0){timerSec=0;timerRunning=false;clearInterval(timerInterval);}renderTimer();},1000);
+  timerEndAt=Date.now()+timerSec*1000;
+  syncNativeTimer("schedule");
+  timerInterval=setInterval(tickTimer,1000);
   render();
 }
-function stopTimer(){clearInterval(timerInterval);timerSec=0;timerRunning=false;render();}
-function pauseTimer(){timerRunning=!timerRunning;renderTimer();}
+function stopTimer(){finishTimer(true);render();}
+function pauseTimer(){
+  if(timerRunning){
+    timerSec=Math.max(0,Math.ceil((timerEndAt-Date.now())/1000));
+    timerRunning=false;timerEndAt=0;
+    clearInterval(timerInterval);
+    syncNativeTimer("cancel");
+  }else if(timerSec>0){
+    timerRunning=true;
+    timerEndAt=Date.now()+timerSec*1000;
+    timerInterval=setInterval(tickTimer,1000);
+    syncNativeTimer("schedule");
+  }
+  renderTimer();
+}
 function toggle(dayName,bi,ti){
   if(DAYS.findIndex(d=>d.name===dayName)!==todayIdx())return;
   if(!state[dayName])state[dayName]={};
@@ -936,7 +987,7 @@ function todoAddHTML(key){
 }
 function todoListHTML(key,isToday){
   const arr=sortTodos(getTodos(key));
-  if(!arr.length)return `<div class="todo-empty">Nothing here yet — add a task or reminder above.</div>`;
+  if(!arr.length)return `<div class="todo-empty">${todoAddOpen?"":"Nothing here yet — tap + to add a task."}</div>`;
   const cur=nowHM();
   return arr.map(it=>{
     const overdue=isToday&&it.time&&!it.done&&it.time<cur;
@@ -951,8 +1002,11 @@ function todoListHTML(key,isToday){
 function todoCardHTML(){
   const key=todayKey(),open=getTodos(key).filter(x=>!x.done).length;
   return `<div class="todo-card">
-    <div class="todo-card-head"><div class="todo-card-title">${ic('list',16)} Today's to-dos</div>${open?`<span class="todo-count">${open} left</span>`:""}</div>
-    ${todoAddHTML(key)}
+    <div class="todo-card-head">
+      <div class="todo-card-head-left"><div class="todo-card-title">${ic('list',16)} Today's to-dos</div>${open?`<span class="todo-count">${open} left</span>`:""}</div>
+      ${!todoAddOpen?`<button class="todo-add-btn" onclick="todoAddOpen=true;render()" aria-label="Add task">${ic('plus',18)}</button>`:""}
+    </div>
+    ${todoAddOpen?todoAddHTML(key):""}
     <div class="todo-list">${todoListHTML(key,true)}</div>
   </div>`;
 }
@@ -1054,7 +1108,7 @@ function render(){
           <div class="chk" style="border-color:${tasks[ti]?col.color:"var(--border)"};background:${tasks[ti]?col.color:"transparent"}">${tasks[ti]?ic('check',13):""}</div>
           <div class="task-text${tasks[ti]?" done":""}">${t}</div>
         </div>`).join("")}
-        ${!b.fixed?`<div class="pomo-wrap"><button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">${ic('play',14)} Start 25-min timer</button><span class="pomo-tag">${ic('timer',12)} Pomodoro for ADHD — one short sprint at a time</span></div>`:""}
+        ${!b.fixed?`<button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">${ic('timer',14)} Pomodoro for ADHD! Lock-in 25 minutes</button>`:""}
       </div>`;
       if(curBlockIdx<todayDay.blocks.length-1){
         const nb=todayDay.blocks[curBlockIdx+1];
@@ -1099,7 +1153,7 @@ function render(){
             <div class="task-text${tasks[ti]?" done":""}">${t}</div>
           </div>`).join("")}
           ${b.note?`<div class="block-note">${b.note}</div>`:""}
-          ${!b.fixed&&canEditDay?`<div class="pomo-wrap"><button class="mini-timer-btn" onclick="startTimer('${b.name}','${col.color}')">${ic('play',13)} 25-min timer</button><span class="pomo-tag">${ic('timer',12)} Pomodoro for ADHD</span></div>`:""}
+          ${!b.fixed&&canEditDay?`<button class="start-timer-btn" style="background:${col.color}" onclick="startTimer('${b.name}','${col.color}')">${ic('timer',14)} Pomodoro for ADHD! Lock-in 25 minutes</button>`:""}
         </div>`:""}
       </div>`;
     });
