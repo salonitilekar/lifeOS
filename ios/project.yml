@@ -34,6 +34,7 @@ targets:
         type: folder
         buildPhase: resources
     entitlements:
+      path: Generated/LifeOS.entitlements
       properties:
         com.apple.developer.healthkit: true
     settings:
