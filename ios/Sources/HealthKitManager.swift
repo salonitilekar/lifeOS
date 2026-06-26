@@ -1,6 +1,10 @@
 import Foundation
 import HealthKit
 
+struct HealthError: Error {
+    let code: String
+}
+
 enum HealthKitManager {
     private static let store = HKHealthStore()
 
@@ -8,40 +12,40 @@ enum HealthKitManager {
         HKHealthStore.isHealthDataAvailable()
     }
 
-    static func syncSteps(completion: @escaping (Result<[String: Int], String>) -> Void) {
+    static func syncSteps(completion: @escaping (Result<[String: Int], HealthError>) -> Void) {
         guard isAvailable else {
-            completion(.failure("unavailable"))
+            completion(.failure(HealthError(code: "unavailable")))
             return
         }
         guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
-            completion(.failure("type"))
+            completion(.failure(HealthError(code: "type")))
             return
         }
 
         store.requestAuthorization(toShare: [], read: [stepType]) { granted, _ in
             guard granted else {
-                completion(.failure("denied"))
+                completion(.failure(HealthError(code: "denied")))
                 return
             }
 
             let calendar = Calendar.current
             let todayStart = calendar.startOfDay(for: Date())
             guard let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStart) else {
-                completion(.failure("date"))
+                completion(.failure(HealthError(code: "date")))
                 return
             }
 
             var results: [String: Int] = [:]
             let group = DispatchGroup()
-            var firstError: String?
+            var firstError: HealthError?
 
             group.enter()
             fetchSteps(stepType: stepType, start: todayStart, end: Date()) { result in
                 if case .success(let count) = result {
                     results[dateKey(for: Date())] = count
                 }
-                if case .failure(let code) = result {
-                    firstError = firstError ?? code
+                if case .failure(let error) = result {
+                    firstError = firstError ?? error
                 }
                 group.leave()
             }
@@ -51,8 +55,8 @@ enum HealthKitManager {
                 if case .success(let count) = result {
                     results[dateKey(for: yesterdayStart)] = count
                 }
-                if case .failure(let code) = result {
-                    firstError = firstError ?? code
+                if case .failure(let error) = result {
+                    firstError = firstError ?? error
                 }
                 group.leave()
             }
@@ -79,7 +83,7 @@ enum HealthKitManager {
         stepType: HKQuantityType,
         start: Date,
         end: Date,
-        completion: @escaping (Result<Int, String>) -> Void
+        completion: @escaping (Result<Int, HealthError>) -> Void
     ) {
         let predicate = HKQuery.predicateForSamples(
             withStart: start,
@@ -92,7 +96,7 @@ enum HealthKitManager {
             options: .cumulativeSum
         ) { _, statistics, error in
             if error != nil {
-                completion(.failure("query"))
+                completion(.failure(HealthError(code: "query")))
                 return
             }
             let count = statistics?.sumQuantity()?.doubleValue(for: .count()) ?? 0

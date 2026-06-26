@@ -188,9 +188,9 @@ struct WebView: UIViewRepresentable {
                             target?.evaluateJavaScript(
                                 "window.onHealthSteps&&window.onHealthSteps({days:\(json)})"
                             )
-                        case .failure(let code):
+                        case .failure(let error):
                             target?.evaluateJavaScript(
-                                "window.onHealthStepsError&&window.onHealthStepsError({code:'\(code)'})"
+                                "window.onHealthStepsError&&window.onHealthStepsError({code:'\(error.code)'})"
                             )
                         }
                     }
