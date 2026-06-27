@@ -285,7 +285,9 @@
 <div id="app"></div>
 <script>
 const HEALTH_SHORTCUT_NAME="Life OS Steps";
+const SCREEN_SHORTCUT_NAME="Life OS Instagram";
 const HEALTH_AUTO_KEY="health_auto_shortcut";
+const SCREEN_AUTO_KEY="screen_auto_shortcut";
 const UI_COLOR="#ffffff";
 const TASKS_COLOR="#eab676";
 const TASKS_TRACK="#5c4228";
@@ -449,6 +451,17 @@ function mergeHealthSteps(days){
 }
 function loadScreen(){try{const r=localStorage.getItem(SCREEN_K);if(r){const d=JSON.parse(r);return d[todayKey()]||0;}}catch(e){}return 0;}
 function saveScreen(v){try{const d=JSON.parse(localStorage.getItem(SCREEN_K)||"{}");d[todayKey()]=v;localStorage.setItem(SCREEN_K,JSON.stringify(d));pushRemote("screen",d);}catch(e){}}
+function mergeScreenMinutes(days){
+  if(!days||typeof days!=="object")return;
+  try{
+    const d=JSON.parse(localStorage.getItem(SCREEN_K)||"{}");
+    Object.assign(d,days);
+    localStorage.setItem(SCREEN_K,JSON.stringify(d));
+    pushRemote("screen",d);
+    const today=todayKey();
+    if(days[today]!=null){screenVal=Math.max(0,Math.round(days[today]));screenInput=String(screenVal);}
+  }catch(e){}
+}
 function loadScreenAll(){try{const r=localStorage.getItem(SCREEN_K);if(r)return JSON.parse(r);}catch(e){}return {};}
 function loadJournalAll(){try{const r=localStorage.getItem(JOURNAL_K);if(r)return JSON.parse(r);}catch(e){}return {};}
 function getJournal(k){return loadJournalAll()[k]||null;}
@@ -547,8 +560,10 @@ let stepsInput=stepsVal||"";
 let screenVal=loadScreen();
 let screenInput=screenVal||"";
 const HEALTH_NATIVE=!!(typeof window!=="undefined"&&window.webkit?.messageHandlers?.health);
-let lastHealthSync=0,healthSyncBooted=false,healthSyncState="",healthSyncTimeout=0,lastShortcutRun=0;
+let lastHealthSync=0,healthSyncBooted=false,healthSyncState="",healthSyncTimeout=0,lastHealthShortcutRun=0;
+let screenSyncBooted=false,screenSyncState="",lastScreenShortcutRun=0;
 function healthAutoEnabled(){try{return localStorage.getItem(HEALTH_AUTO_KEY)!=="0";}catch(e){return true;}}
+function screenAutoEnabled(){try{return localStorage.getItem(SCREEN_AUTO_KEY)!=="0";}catch(e){return true;}}
 function runHealthShortcut(){
   if(!HEALTH_NATIVE)return;
   healthSyncState="syncing";
@@ -556,12 +571,26 @@ function runHealthShortcut(){
   try{window.webkit.messageHandlers.shortcut.postMessage({name:HEALTH_SHORTCUT_NAME});}
   catch(e){try{window.location.href="shortcuts://run-shortcut?name="+encodeURIComponent(HEALTH_SHORTCUT_NAME);}catch(e2){healthSyncState="error";render();}}
 }
+function runScreenShortcut(){
+  if(!HEALTH_NATIVE)return;
+  screenSyncState="syncing";
+  render();
+  try{window.webkit.messageHandlers.shortcut.postMessage({name:SCREEN_SHORTCUT_NAME});}
+  catch(e){try{window.location.href="shortcuts://run-shortcut?name="+encodeURIComponent(SCREEN_SHORTCUT_NAME);}catch(e2){screenSyncState="error";render();}}
+}
 function maybeAutoHealthShortcut(){
   if(!HEALTH_NATIVE||!healthAutoEnabled())return;
   const now=Date.now();
-  if(now-lastShortcutRun<120000)return;
-  lastShortcutRun=now;
+  if(now-lastHealthShortcutRun<120000)return;
+  lastHealthShortcutRun=now;
   setTimeout(runHealthShortcut,600);
+}
+function maybeAutoScreenShortcut(){
+  if(!HEALTH_NATIVE||!screenAutoEnabled())return;
+  const now=Date.now();
+  if(now-lastScreenShortcutRun<120000)return;
+  lastScreenShortcutRun=now;
+  setTimeout(runScreenShortcut,600);
 }
 let _je=getJournal(todayKey())||{};
 let journalMood=_je.mood||null;
@@ -613,6 +642,7 @@ function onTimerVisibility(){
   if(document.visibilityState!=="visible")return;
   syncBlockNotifications();
   syncHealthSteps();
+  maybeAutoScreenShortcut();
   if(!timerRunning||!timerEndAt)return;
   const left=Math.max(0,Math.ceil((timerEndAt-Date.now())/1000));
   if(left<=0)finishTimer(true);
@@ -677,7 +707,7 @@ function toggle(dayName,bi,ti){
 }
 function setWater(idx){waterLevel=WATER_LEVELS[idx];saveWater(waterLevel);render();}
 function saveStepsInput(){stepsVal=parseInt(stepsInput)||0;saveSteps(stepsVal);healthSyncState="";render();}
-function saveScreenInput(){screenVal=parseInt(screenInput)||0;saveScreen(screenVal);render();}
+function saveScreenInput(){screenVal=parseInt(screenInput)||0;saveScreen(screenVal);screenSyncState="";render();}
 window.onHealthSteps=function(p){
   if(!p)return;
   clearTimeout(healthSyncTimeout);
@@ -687,6 +717,13 @@ window.onHealthSteps=function(p){
   render();
 };
 window.onHealthStepsError=function(p){clearTimeout(healthSyncTimeout);healthSyncState=p?.code||"error";render();};
+window.onScreenMinutes=function(p){
+  if(!p)return;
+  screenSyncState=p?.source==="shortcut"?"shortcut-ok":"ok";
+  if(p.days)mergeScreenMinutes(p.days);
+  else if(typeof p.minutes==="number"){screenVal=Math.max(0,Math.round(p.minutes));screenInput=String(screenVal);saveScreen(screenVal);}
+  render();
+};
 function syncHealthSteps(force){
   if(!HEALTH_NATIVE)return;
   const now=Date.now();
@@ -778,15 +815,21 @@ function screenHTML(){
   const col=SCREEN_COLOR;
   const hrs=screenVal>=60?`${Math.floor(screenVal/60)}h ${screenVal%60}m`:`${screenVal}m`;
   const win=screenVal>0&&!over; // logged and under the limit = the win
+  const screenHint=HEALTH_NATIVE?(
+    screenSyncState==="syncing"?" · syncing…":
+    screenSyncState==="shortcut-ok"?" · from Instagram":
+    screenSyncState==="ok"?" · synced":
+    screenSyncState==="error"?" · sync failed":
+    ""):"";
   if(win&&!secOpen.screen)return collapsedTrack('screen','phone',SCREEN_COLOR,'Doomscroll time',`${hrs} · under limit`);
   return `<div class="screen-section">
     <div class="steps-header"${win?` style="cursor:pointer" onclick="toggleSec('screen')"`:""}>
-      <div><div class="steps-title">${ic('phone',15,SCREEN_COLOR)} Doomscroll time</div><div style="font-size:var(--fs-sub);color:var(--sub)">Stay under ${SCREEN_LIMIT} min</div></div>
+      <div><div class="steps-title">${ic('phone',15,SCREEN_COLOR)} Doomscroll time</div><div style="font-size:var(--fs-sub);color:var(--sub)">Stay under ${SCREEN_LIMIT} min${screenHint}</div></div>
       <div style="display:flex;align-items:center;gap:8px;text-align:right"><div><div class="steps-val" style="color:${col}">${hrs}</div><div style="font-size:var(--fs-sub);color:var(--sub)">${over?`${screenVal-SCREEN_LIMIT}m over`:`${SCREEN_LIMIT-screenVal}m to spare`}</div></div>${win?`<span class="chevron open">${ic('chevron',16)}</span>`:""}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input class="steps-input" type="number" placeholder="Minutes doomscrolled..." value="${screenInput}" onchange="screenInput=this.value" oninput="screenInput=this.value" onkeydown="if(event.key==='Enter')saveScreenInput()"/>
-      <button class="steps-save" style="background:${col}" onclick="saveScreenInput()">Save</button>
+      <input class="steps-input" type="number" placeholder="Minutes doomscrolled..." value="${screenInput}" onchange="screenInput=this.value;saveScreenInput()" oninput="screenInput=this.value" onkeydown="if(event.key==='Enter')saveScreenInput()"/>
+      ${HEALTH_NATIVE?`<button class="steps-health" style="background:${col};color:#fff" onclick="runScreenShortcut()">Sync</button>`:`<button class="steps-save" style="background:${col}" onclick="saveScreenInput()">Save</button>`}
     </div>
     <div class="steps-bar"><div class="steps-fill" style="width:${pct}%;background:${col}"></div></div>
   </div>`;
@@ -1287,6 +1330,11 @@ function render(){
     healthSyncBooted=true;
     if(localStorage.getItem(HEALTH_AUTO_KEY)===null)try{localStorage.setItem(HEALTH_AUTO_KEY,"1");}catch(e){}
     setTimeout(maybeAutoHealthShortcut,1200);
+  }
+  if(HEALTH_NATIVE&&!screenSyncBooted){
+    screenSyncBooted=true;
+    if(localStorage.getItem(SCREEN_AUTO_KEY)===null)try{localStorage.setItem(SCREEN_AUTO_KEY,"1");}catch(e){}
+    setTimeout(maybeAutoScreenShortcut,2800);
   }
 }
 

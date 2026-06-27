@@ -15,7 +15,13 @@ final class WebViewBridge {
     func importHealthDays(_ days: [String: Int]) {
         guard let jsonData = try? JSONSerialization.data(withJSONObject: days),
               let json = String(data: jsonData, encoding: .utf8) else { return }
-        runJavaScript("window.onHealthSteps&&window.onHealthSteps({days:\(json)})")
+        runJavaScript("window.onHealthSteps&&window.onHealthSteps({days:\(json),source:'shortcut'})")
+    }
+
+    func importScreenDays(_ days: [String: Int]) {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: days),
+              let json = String(data: jsonData, encoding: .utf8) else { return }
+        runJavaScript("window.onScreenMinutes&&window.onScreenMinutes({days:\(json),source:'shortcut'})")
     }
 
     func runJavaScript(_ script: String) {
@@ -37,8 +43,25 @@ final class WebViewBridge {
 enum HealthURLHandler {
     static func handle(_ url: URL) -> Bool {
         guard url.scheme?.lowercased() == "lifeos" else { return false }
-        guard url.host?.lowercased() == "health" else { return false }
+        let host = url.host?.lowercased() ?? ""
 
+        switch host {
+        case "health":
+            let days = parseDayCounts(from: url)
+            guard !days.isEmpty else { return false }
+            WebViewBridge.shared.importHealthDays(days)
+            return true
+        case "screen":
+            let days = parseDayCounts(from: url)
+            guard !days.isEmpty else { return false }
+            WebViewBridge.shared.importScreenDays(days)
+            return true
+        default:
+            return false
+        }
+    }
+
+    private static func parseDayCounts(from url: URL) -> [String: Int] {
         let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let lookup = Dictionary(uniqueKeysWithValues: items.compactMap { item -> (String, String)? in
             guard let value = item.value else { return nil }
@@ -54,6 +77,8 @@ enum HealthURLHandler {
             days[dateKey(for: today)] = max(0, count)
         } else if let value = lookup["steps"], let count = Int(value) {
             days[dateKey(for: today)] = max(0, count)
+        } else if let value = lookup["minutes"], let count = Int(value) {
+            days[dateKey(for: today)] = max(0, count)
         }
 
         if let value = lookup["yesterday"], let count = Int(value),
@@ -61,14 +86,12 @@ enum HealthURLHandler {
             days[dateKey(for: yesterday)] = max(0, count)
         }
 
-        for (key, value) in lookup where key != "today" && key != "yesterday" && key != "steps" {
+        for (key, value) in lookup where key != "today" && key != "yesterday" && key != "steps" && key != "minutes" {
             guard let count = Int(value) else { continue }
             days[key] = max(0, count)
         }
 
-        guard !days.isEmpty else { return false }
-        WebViewBridge.shared.importHealthDays(days)
-        return true
+        return days
     }
 
     private static func dateKey(for date: Date) -> String {
