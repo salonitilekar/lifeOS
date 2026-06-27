@@ -126,6 +126,10 @@ struct WebView: UIViewRepresentable {
         webView.uiDelegate = context.coordinator
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.bounces = true
+        webView.scrollView.minimumZoomScale = 1
+        webView.scrollView.maximumZoomScale = 1
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+        webView.scrollView.delegate = context.coordinator
         webView.isOpaque = false
         let bg = UIColor.black
         webView.backgroundColor = bg
@@ -139,7 +143,7 @@ struct WebView: UIViewRepresentable {
 
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
-    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UNUserNotificationCenterDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, UNUserNotificationCenterDelegate, UIScrollViewDelegate {
         weak var webView: WKWebView?
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -260,6 +264,8 @@ struct WebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             WebViewBridge.shared.attach(webView)
         }
+
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? { nil }
 
         func webView(
             _ webView: WKWebView,

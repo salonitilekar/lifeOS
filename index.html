@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Life OS"/>
@@ -15,8 +15,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css"/>
 <style>
   :root{--bg:#000;--bg2:#212121;--bg3:#303030;--bg4:#3f3f3f;--border:rgba(255,255,255,.08);--text:#fff;--sub:#aaa;--accent:#ffffff;--tasks:#eab676;--tasks-track:#5c4228;--water:#31ceff;--water-track:#125a70;--steps:#34d25c;--steps-track:#145a28;--screen:#dd0011;--screen-track:#5c0010;--radius:12px;--radius-lg:16px;--radius-sm:8px;--font:"Geist Sans","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--fs-sub:8px;--fs-btn:10px;--fs-title:12px;--fs-major:14px}
+  html{touch-action:manipulation;-webkit-text-size-adjust:100%}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:var(--fs-major);font-weight:400;line-height:1.43;min-height:100dvh;padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:var(--fs-major);font-weight:400;line-height:1.43;min-height:100dvh;padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased;touch-action:manipulation}
   button,input,textarea,select{font-family:var(--font)}
   button{font-size:var(--fs-btn);cursor:pointer}
   .ic{display:inline-block;vertical-align:-0.15em;flex-shrink:0}
@@ -213,11 +214,11 @@
   .todo-card-head-left{display:flex;align-items:center;gap:8px;min-width:0}
   .todo-card-title{font-size:var(--fs-major);font-weight:500;color:var(--text);display:inline-flex;align-items:center;gap:7px}
   .todo-count{font-size:var(--fs-title);color:var(--sub);background:var(--bg3);padding:2px 9px;border-radius:100px;flex-shrink:0;font-weight:400}
-  .todo-add{display:flex;gap:7px;margin-bottom:10px}
-  .todo-input{flex:1;min-width:0;background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 12px;font-family:var(--font)}
+  .todo-add{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+  .todo-input{flex:1;min-width:0;background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 12px;font-family:var(--font);line-height:1.15}
   .todo-input:focus{outline:none;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
-  .todo-time{background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 8px;font-family:var(--font);width:auto;flex-shrink:0}
-  .todo-add-btn{flex-shrink:0;width:36px;height:36px;border-radius:10px;border:none;background:var(--accent);color:#0f0f0f;display:inline-flex;align-items:center;justify-content:center}
+  .todo-time{background:var(--bg3);border:none;border-radius:var(--radius-sm);color:var(--text);font-size:var(--fs-major);padding:10px 8px;font-family:var(--font);width:auto;flex-shrink:0;line-height:1.15}
+  .todo-add-btn{flex-shrink:0;width:40px;height:40px;border-radius:10px;border:none;background:var(--accent);color:#0f0f0f;display:inline-flex;align-items:center;justify-content:center}
   .todo-add-btn:active{opacity:.8}
   .todo-list{margin-top:6px}
   .todo-item{display:flex;align-items:center;gap:10px;padding:10px 2px;border-top:1px solid var(--border)}
