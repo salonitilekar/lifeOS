@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - "index.html"
+      - "inline-logo.png"
       - "ios/**"
       - ".github/workflows/ios.yml"
   workflow_dispatch:
@@ -23,6 +24,7 @@ jobs:
         run: |
           mkdir -p ios/www
           cp index.html ios/www/index.html
+          cp inline-logo.png ios/www/inline-logo.png
 
       - name: Generate Xcode project
         working-directory: ios

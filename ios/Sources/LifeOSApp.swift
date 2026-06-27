@@ -127,7 +127,7 @@ struct WebView: UIViewRepresentable {
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.bounces = true
         webView.isOpaque = false
-        let bg = UIColor(red: 15/255, green: 15/255, blue: 15/255, alpha: 1)
+        let bg = UIColor.black
         webView.backgroundColor = bg
         webView.scrollView.backgroundColor = bg
 

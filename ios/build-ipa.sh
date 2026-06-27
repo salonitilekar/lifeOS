@@ -21,6 +21,7 @@ echo "==> Staging web assets"
 rm -rf www
 mkdir -p www
 cp ../index.html www/index.html
+cp ../inline-logo.png www/inline-logo.png
 
 echo "==> Generating Xcode project"
 xcodegen generate
